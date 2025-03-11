@@ -2,17 +2,14 @@
 
 pkgs.mkShell {
   name = "cs2_env";
-  buildInputs = [
-    pkgs.python3
-    pkgs.python3Packages.pip
-    pkgs.python3Packages.numpy     # Demoparser2 dependency
-    pkgs.python3Packages.pandas    # Demoparser2 dependency
-    pkgs.python3Packages.polars    # Demoparser2 dependency
-    pkgs.python3Packages.pyarrow   # Demoparser2 dependency
-    pkgs.python3Packages.tqdm      # Demoparser2 dependency
-    pkgs.python3Packages.setuptools
-    pkgs.python3Packages.wheel
-    pkgs.python3Packages.virtualenv
+  nativeBuildInputs = with pkgs; [
+    python3
+    python3Packages.pip
+    python3Packages.numpy     # Demoparser2 dependency
+    python3Packages.pandas    # Demoparser2 dependency
+    python3Packages.polars    # Demoparser2 dependency
+    python3Packages.pyarrow   # Demoparser2 dependency
+    python3Packages.tqdm      # Demoparser2 dependency
   ];
 
   shellHook = ''
