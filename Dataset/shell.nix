@@ -1,26 +1,33 @@
-# shell.nix
 { pkgs ? import <nixpkgs> {} }:
 
 pkgs.mkShell {
-  buildInputs = [
-    pkgs.gcc
-    pkgs.libsigcxx
-    pkgs.libstdcxx5
-    pkgs.python3
-    pkgs.python3Packages.pip
-    pkgs.python3Packages.virtualenv
+  nativeBuildInputs = with pkgs; [
+    python3
+    python3Packages.pip
+    python3Packages.setuptools
+    python3Packages.wheel
+    python3Packages.virtualenv
+    cmake
+    gcc
+    pkgs.stdenv.cc.cc.lib  # Ensure libstdc++.so.6 is available
   ];
 
   shellHook = ''
-    echo "Setting up virtualenv..."
-    if [ ! -d "venv" ]; then
-      python3 -m venv venv
-      source venv/bin/activate
-      pip install --upgrade demoparser2
-    else
-      source venv/bin/activate
+    # Ensure the virtual environment exists
+    if [ ! -d ".venv" ]; then
+      python -m venv .venv
     fi
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/nix/store/agp6lqznayysqvqkx4k1ggr8n1rsyi8c-gcc-13.2.0-lib/lib
-    export PYTHONPATH=$PYTHONPATH:${toString pkgs.python3Packages.pip}
+    
+    # Activate the virtual environment
+    source .venv/bin/activate
+
+    # Upgrade pip and install demoparser2 if not already installed
+    if ! python -c "import demoparser2" &>/dev/null; then
+      pip install --upgrade pip
+      pip install demoparser2
+    fi
+    export LD_LIBRARY_PATH="${pkgs.stdenv.cc.cc.lib}/lib:$LD_LIBRARY_PATH"
+
+    export PYTHONPATH="$(pwd)/.venv/lib/python3.10/site-packages:$PYTHONPATH"
   '';
 }
