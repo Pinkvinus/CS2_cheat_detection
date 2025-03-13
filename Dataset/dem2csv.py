@@ -27,42 +27,42 @@ def df_to_readable_csv(df:pandas.core.frame.DataFrame, filename:str):
         for index, row in df_aligned.iterrows():
             f.write(','.join([str(row[col]).ljust(max_lengths[col]) for col in df.columns]) + '\n')
 
-my_num = -1
+def binary_search_sorted_dataframe(df:pandas.core.frame.DataFrame , low:int, high:int, col, val)-> int:
+    """
+        Uses binary search to find the first occurance of val in a sorted column(col) of a dataframe(df)
+    """
+    if high >= low:
+        mid = low + (high - low) // 2
 
-def binary_search_first_occurance(df:pandas.core.frame.DataFrame , low:int, high:int, col, val)-> int:
-        if high > low:
-            mid = low + (high - low) // 2
-
-            if df[col].iloc[mid] != val:
-                # Look to the left
-                return binary_search_first_occurance(df, low, mid-1, col, val)
-            
+        if df[col].iloc[mid] == val:
+            # Check if this is the first occurrence
+            if mid == 0 or df[col].iloc[mid-1] != val:
+                return mid
             else:
-                # Look to the right
-                return binary_search_first_occurance(df, mid+1, high, col, val)
-
-        elif high == low:
-            print(f"my return value{high}")
-            return high
-        return 
-
+                # Look to the left
+                return binary_search_sorted_dataframe(df, low, mid-1, col, val)
+            
+        elif df[col].iloc[mid] > val:
+            # Look to the right
+            return binary_search_sorted_dataframe(df, mid-1, high, col, val)
+        else:
+            # Look to the right
+            return binary_search_sorted_dataframe(df, mid+1, high, col, val)
+    else:
+        return -1  # If no match is found
 
 def remove_warmup_rounds(df: pandas.core.frame.DataFrame) -> pandas.core.frame.DataFrame:
     """removes the ticks corresponding to a warmup round for a given data frame"""
 
-
-
-
-
+    index = binary_search_sorted_dataframe(ticks_df,0,len(ticks_df.index),'is_warmup_period', False)
+    print(index)
+    return df.loc[index:].reset_index(drop=True)
 
 def get_tick(df:pandas.core.frame.DataFrame, index:int) -> pandas.core.frame.DataFrame:
     """Returns the tick of the index from the dataframe"""
+    
 
-
-index = binary_search_first_occurance(ticks_df,0,len(ticks_df.index)+1,'is_warmup_period', True)
-print(f"result: {index}")
-print(ticks_df.iloc[my_num])
 
 #df_to_readable_csv(ticks_df, "new_test.csv")
 no_warm = remove_warmup_rounds(ticks_df)
-#df_to_readable_csv(no_warm, "no_warm_test.csv")
+df_to_readable_csv(no_warm, "no_warm_new_test.csv")
