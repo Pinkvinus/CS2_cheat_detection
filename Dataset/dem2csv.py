@@ -6,7 +6,7 @@ START_BALANCE = 800
 MAX_HEALTH = 100.0
 NUM_PLAYERS = 10
 
-parser = DemoParser("/home/pinkvinus/Documents/itu/CS2_cheat_detection/Dataset/match730_003715375984984195154_2128110453_185.dem")
+parser = DemoParser("./match730_003715375984984195154_2128110453_185.dem")
 #event_df = parser.parse_event("player_death", player=["X", "Y"], other=["total_rounds_played"])
 ticks_df = parser.parse_ticks(["X", "Y", "Z", "health", "score", "mvps", "is_alive", "balance", "Inventory", "FORWARD", "team_name", "team_clan_name", "custom_name", "total_rounds_played","is_warmup_period", "is_freeze_period"])
 
@@ -64,7 +64,7 @@ def get_tick(df:pandas.core.frame.DataFrame, index:int) -> pandas.core.frame.Dat
     """Returns a single tick of the index from the dataframe"""
     i = binary_search_sorted_dataframe(df, 'tick', index)
     print()
-    return df.loc[index:index+NUM_PLAYERS-1].reset_index(drop=True)
+    return df.loc[i:i+NUM_PLAYERS-1].reset_index(drop=True)
 
 
 #df_to_readable_csv(ticks_df, "new_test.csv")
@@ -76,5 +76,7 @@ ticks = get_tick(ticks_df, 50)
 print(ticks)
 
 
-no_warm = remove_warmup_rounds(ticks_df)
-df_to_readable_csv(no_warm, "no_warm_new_test.csv")
+#no_warm = remove_warmup_rounds(ticks_df)
+#df_to_readable_csv(no_warm, "no_warm_new_test.csv") 
+
+ticks_df.to_csv(compression='gzip', path_or_buf="./compressed_boi.csv")
