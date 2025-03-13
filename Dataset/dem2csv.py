@@ -27,42 +27,54 @@ def df_to_readable_csv(df:pandas.core.frame.DataFrame, filename:str):
         for index, row in df_aligned.iterrows():
             f.write(','.join([str(row[col]).ljust(max_lengths[col]) for col in df.columns]) + '\n')
 
-def binary_search_sorted_dataframe(df:pandas.core.frame.DataFrame , low:int, high:int, col, val)-> int:
+def binary_search_sorted_dataframe(df:pandas.core.frame.DataFrame, col, val)-> int:
     """
         Uses binary search to find the first occurance of val in a sorted column(col) of a dataframe(df)
     """
-    if high >= low:
-        mid = low + (high - low) // 2
+    def binary_search_helper(df:pandas.core.frame.DataFrame , low:int, high:int, col, val)-> int:
+        if high >= low:
+            mid = low + (high - low) // 2
 
-        if df[col].iloc[mid] == val:
-            # Check if this is the first occurrence
-            if mid == 0 or df[col].iloc[mid-1] != val:
-                return mid
-            else:
+            if df[col].iloc[mid] == val:
+                # Check if this is the first occurrence
+                if mid == 0 or df[col].iloc[mid-1] != val:
+                    return mid
+                else:
+                    # Look to the left
+                    return binary_search_helper(df, low, mid-1, col, val)
+                
+            elif df[col].iloc[mid] > val:
                 # Look to the left
-                return binary_search_sorted_dataframe(df, low, mid-1, col, val)
-            
-        elif df[col].iloc[mid] > val:
-            # Look to the right
-            return binary_search_sorted_dataframe(df, mid-1, high, col, val)
+                return binary_search_helper(df, low, mid-1, col, val)
+            else:
+                # Look to the right
+                return binary_search_helper(df, mid+1, high, col, val)
         else:
-            # Look to the right
-            return binary_search_sorted_dataframe(df, mid+1, high, col, val)
-    else:
-        return -1  # If no match is found
+            return -1  # If no match is found
+        
+    return binary_search_helper(df, 0, len(df.index), col, val)
 
 def remove_warmup_rounds(df: pandas.core.frame.DataFrame) -> pandas.core.frame.DataFrame:
     """removes the ticks corresponding to a warmup round for a given data frame"""
 
-    index = binary_search_sorted_dataframe(ticks_df,0,len(ticks_df.index),'is_warmup_period', False)
-    print(index)
+    index = binary_search_sorted_dataframe(ticks_df,'is_warmup_period', False)
     return df.loc[index:].reset_index(drop=True)
 
 def get_tick(df:pandas.core.frame.DataFrame, index:int) -> pandas.core.frame.DataFrame:
-    """Returns the tick of the index from the dataframe"""
-    
+    """Returns a single tick of the index from the dataframe"""
+    i = binary_search_sorted_dataframe(df, 'tick', index)
+    print()
+    return df.loc[index:index+NUM_PLAYERS-1].reset_index(drop=True)
 
 
 #df_to_readable_csv(ticks_df, "new_test.csv")
+    
+
+
+ticks = get_tick(ticks_df, 50)
+
+print(ticks)
+
+
 no_warm = remove_warmup_rounds(ticks_df)
 df_to_readable_csv(no_warm, "no_warm_new_test.csv")
