@@ -2,7 +2,7 @@ from demoparser2 import DemoParser #https://github.com/LaihoE/demoparser
 import pandas
 import time
 from typing import overload
-from DemoParserFields import BUTTONS
+from DemoParserFields import ALL_FIELDS
 
 START_BALANCE = 800
 MAX_HEALTH = 100.0
@@ -12,7 +12,7 @@ REPLACEMENT_NAMES = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]
 
 parser = DemoParser("./match730_003715375984984195154_2128110453_185.dem")
 #event_df = parser.parse_event("player_death", player=["X", "Y"], other=["total_rounds_played"])
-ticks_df = parser.parse_ticks(BUTTONS)
+ticks_df = parser.parse_ticks(ALL_FIELDS)
 
 def get_fields():
     with open("fields.txt", "r") as f:
@@ -106,12 +106,16 @@ def replace_names(df:pandas.core.frame.DataFrame):
     return new_df
 
 
-frame = replace_names(ticks_df)
+#frame = replace_names(ticks_df)
 #df_to_readable_csv(ticks_df, "tick_df.csv") 
 
-frame_tick = get_ticks(frame, 1, 3)
-print(frame_tick)
+#frame_tick = get_ticks(frame, 1, 3)
+#print(frame_tick)
+start = time.time()
+ticks_df.to_csv(path_or_buf="big_boi.csv")
+end = time.time()
 
+print(f"time: {end-start}")
 
 #no_warm = remove_warmup_rounds(ticks_df)
 #df_to_readable_csv(ticks_df, "tick_df.csv") 
