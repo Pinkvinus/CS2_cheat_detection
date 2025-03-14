@@ -1,14 +1,24 @@
 from demoparser2 import DemoParser #https://github.com/LaihoE/demoparser
 import pandas
 import time
+from typing import overload
+from DemoParserFields import BUTTONS
 
 START_BALANCE = 800
 MAX_HEALTH = 100.0
 NUM_PLAYERS = 10
 
+REPLACEMENT_NAMES = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]
+
 parser = DemoParser("./match730_003715375984984195154_2128110453_185.dem")
 #event_df = parser.parse_event("player_death", player=["X", "Y"], other=["total_rounds_played"])
-ticks_df = parser.parse_ticks(["X", "Y", "Z", "health", "score", "mvps", "is_alive", "balance", "Inventory", "FORWARD", "team_name", "team_clan_name", "custom_name", "total_rounds_played","is_warmup_period", "is_freeze_period"])
+ticks_df = parser.parse_ticks(BUTTONS)
+
+def get_fields():
+    with open("fields.txt", "r") as f:
+        all_fields = [line.strip() for line in f.readlines()]
+
+    return all_fields
 
 def df_to_readable_csv(df:pandas.core.frame.DataFrame, filename:str): 
     """ takes a pandas data frame and a output file name and aligns the columns in the resulting csv such that it is readable"""
@@ -62,21 +72,47 @@ def remove_warmup_rounds(df: pandas.core.frame.DataFrame) -> pandas.core.frame.D
 
 def get_tick(df:pandas.core.frame.DataFrame, index:int) -> pandas.core.frame.DataFrame:
     """Returns a single tick of the index from the dataframe"""
+
     i = binary_search_sorted_dataframe(df, 'tick', index)
-    print()
+
     return df.loc[i:i+NUM_PLAYERS-1].reset_index(drop=True)
 
+def get_ticks(df:pandas.core.frame.DataFrame, start:int, end:int) -> pandas.core.frame.DataFrame:
+    """Returns a dataframe of ticks of the index from the dataframe"""
 
-#df_to_readable_csv(ticks_df, "new_test.csv")
-    
+    s = binary_search_sorted_dataframe(df, 'tick', start)
+    t = binary_search_sorted_dataframe(df, 'tick', end)
+
+    return df.loc[s:t+NUM_PLAYERS-1].reset_index(drop=True)
+
+def get_player_names(df) -> list[str]:
+    """ 
+        Takes the playernames from the first tick. Note that this requires that 
+        there is a first tick in the dataframe
+    """
+    names = get_tick(df, 1)['name'].tolist()        
+
+    return names
+
+def replace_names(df:pandas.core.frame.DataFrame):
+    """replaces names in the 'name' column with a char"""
+    names = get_player_names(df)
+    new_df = df.copy()
+
+    # replacing names in the 'name' column
+    for i in range(0, NUM_PLAYERS):
+        new_df['name'] = new_df['name'].replace({names[i]: REPLACEMENT_NAMES[i]})
+
+    return new_df
 
 
-ticks = get_tick(ticks_df, 50)
+frame = replace_names(ticks_df)
+#df_to_readable_csv(ticks_df, "tick_df.csv") 
 
-print(ticks)
+frame_tick = get_ticks(frame, 1, 3)
+print(frame_tick)
 
 
 #no_warm = remove_warmup_rounds(ticks_df)
-#df_to_readable_csv(no_warm, "no_warm_new_test.csv") 
+#df_to_readable_csv(ticks_df, "tick_df.csv") 
 
-ticks_df.to_csv(compression='gzip', path_or_buf="./compressed_boi.csv")
