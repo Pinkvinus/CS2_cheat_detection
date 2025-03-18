@@ -1,5 +1,6 @@
 from demoparser2 import DemoParser #https://github.com/LaihoE/demoparser
 import pandas
+import json
 import time
 from typing import overload
 from DemoParserFields import ALL_FIELDS
@@ -11,8 +12,6 @@ NUM_PLAYERS = 10
 REPLACEMENT_NAMES = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]
 
 parser = DemoParser("./match730_003715375984984195154_2128110453_185.dem")
-#event_df = parser.parse_event("player_death", player=["X", "Y"], other=["total_rounds_played"])
-ticks_df = parser.parse_ticks(ALL_FIELDS)
 
 def get_fields():
     with open("fields.txt", "r") as f:
@@ -105,18 +104,31 @@ def replace_names(df:pandas.core.frame.DataFrame):
 
     return new_df
 
+def events_2_json():
+    events = parser.list_game_events()
 
-#frame = replace_names(ticks_df)
-#df_to_readable_csv(ticks_df, "tick_df.csv") 
+    event_data = {}
 
-#frame_tick = get_ticks(frame, 1, 3)
-#print(frame_tick)
-start = time.time()
-ticks_df.to_csv(path_or_buf="big_boi.csv")
-end = time.time()
+    for e in events:
+        print(e)
+        df = parser.parse_event(e)
+        dict = df.to_dict(orient="records")
 
-print(f"time: {end-start}")
+        print(df.columns.values.tolist())
 
-#no_warm = remove_warmup_rounds(ticks_df)
-#df_to_readable_csv(ticks_df, "tick_df.csv") 
+        event_data.update({e:dict})
+
+    with open("cs_events.json", "w") as f:
+        json.dump(event_data, f, indent=4)
+
+    return event_data
+
+
+
+#event_df = parser.parse_event("player_death", player=["X", "Y"], other=["total_rounds_played"])
+#ticks_df = parser.parse_ticks(ALL_FIELDS)
+
+#print(parser.list_game_events())
+
+events_2_json()
 
