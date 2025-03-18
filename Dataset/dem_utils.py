@@ -84,12 +84,13 @@ def get_ticks(df:pandas.core.frame.DataFrame, start:int, end:int) -> pandas.core
 
     return df.loc[s:t+NUM_PLAYERS-1].reset_index(drop=True)
 
-def get_player_names(df) -> list[str]:
+def get_player_names() -> list[str]:
     """ 
         Takes the playernames from the first tick. Note that this requires that 
         there is a first tick in the dataframe
     """
-    names = get_tick(df, 1)['name'].tolist()        
+
+    names = parser.parse_player_info()['name'].tolist()
 
     return names
 
