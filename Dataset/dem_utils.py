@@ -2,7 +2,7 @@ from demoparser2 import DemoParser #https://github.com/LaihoE/demoparser
 import pandas
 import json
 import time
-from DemoParserFields import ALL_FIELDS
+from demo_parser_fields import ALL_FIELDS
 
 START_BALANCE = 800
 MAX_HEALTH = 100.0
@@ -11,7 +11,7 @@ NUM_PLAYERS = 10
 # if NUM_PLAYERS is altered from 10 the replacement names migh run into problems
 REPLACEMENT_NAMES = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]
 
-parser = DemoParser("./match730_003715375984984195154_2128110453_185.dem")
+parser = -1
 
 def get_fields():
     with open("fields.txt", "r") as f:
@@ -93,7 +93,7 @@ def get_player_names(df) -> list[str]:
 
     return names
 
-def replace_names(df:pandas.core.frame.DataFrame):
+def replace_csv_names(df:pandas.core.frame.DataFrame):
     """replaces names in the 'name' column with a char"""
     names = get_player_names(df)
     new_df = df.copy()
@@ -104,7 +104,7 @@ def replace_names(df:pandas.core.frame.DataFrame):
 
     return new_df
 
-def events_2_json():
+def events_2_json(filename:str):
     """
         
     """
@@ -120,12 +120,7 @@ def events_2_json():
         dict = df.to_dict(orient="records")
         event_data.update({e:dict})
 
-    with open("cs_events.json", "w") as f:
+    with open(filename, "w") as f:
         json.dump(event_data, f, indent=4)
 
     return event_data
-
-
-
-events_2_json()
-
