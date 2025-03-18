@@ -2,13 +2,13 @@ from demoparser2 import DemoParser #https://github.com/LaihoE/demoparser
 import pandas
 import json
 import time
-from typing import overload
 from DemoParserFields import ALL_FIELDS
 
 START_BALANCE = 800
 MAX_HEALTH = 100.0
 NUM_PLAYERS = 10
 
+# if NUM_PLAYERS is altered from 10 the replacement names migh run into problems
 REPLACEMENT_NAMES = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]
 
 parser = DemoParser("./match730_003715375984984195154_2128110453_185.dem")
@@ -105,17 +105,19 @@ def replace_names(df:pandas.core.frame.DataFrame):
     return new_df
 
 def events_2_json():
+    """
+        
+    """
     events = parser.list_game_events()
-
     event_data = {}
 
     for e in events:
-        print(e)
         df = parser.parse_event(e)
+
+        if "user_steamid" in df.columns:
+            df = df.drop(columns=["user_steamid"])
+
         dict = df.to_dict(orient="records")
-
-        print(df.columns.values.tolist())
-
         event_data.update({e:dict})
 
     with open("cs_events.json", "w") as f:
@@ -124,11 +126,6 @@ def events_2_json():
     return event_data
 
 
-
-#event_df = parser.parse_event("player_death", player=["X", "Y"], other=["total_rounds_played"])
-#ticks_df = parser.parse_ticks(ALL_FIELDS)
-
-#print(parser.list_game_events())
 
 events_2_json()
 
