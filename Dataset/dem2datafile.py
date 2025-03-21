@@ -15,5 +15,15 @@ for demo in os.listdir(INPUT_PATH):
     demu.parser = DemoParser(INPUT_PATH + "/" + demo)
     path = OUTPUT_PATH + "/" + str(counter)
 
+    # loading the information
+    tick_df = demu.parser.parse_ticks(demu.ALL_FIELDS)
+    events_list = demu.get_all_events()
+
+    # removing sensitive information
     
-    demu.events_2_json(path  + ".json")
+
+    tick_df = demu.replace_df_names(tick_df)
+
+    tick_df.to_csv(path_or_buf=path + ".csv")
+
+    demu.events_2_json(path + ".json")
