@@ -11,6 +11,42 @@ NUM_PLAYERS = 10
 # if NUM_PLAYERS is altered from 10 the replacement names migh run into problems
 REPLACEMENT_NAMES = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]
 
+SENSITIVE_DATA_REMOVAL = ["crosshair_code",
+                          "player_name",
+                          "player_steamid",
+                          "music_kit_id",
+                          "leader_honors",
+                          "teacher_honors",
+                          "friendly_honors",
+                          "agent_skin",
+                          "user_id",
+                          "active_weapon_skin",
+                          "custom_name",
+                          "orig_owner_xuid_low",
+                          "orig_owner_xuid_high",
+                          "fall_back_paint_kit",
+                          "fall_back_seed",
+                          "fall_back_wear",
+                          "fall_back_stat_track",
+                          "weapon_float",
+                          "weapon_paint_seed",
+                          "weapon_stickers",
+                          "xuid",
+                          "networkid",
+                          "PlayerID",
+                          "address"
+                          ]
+
+SENSITIVE_DATA_REPLACE = ["name",
+                          "user_name",
+                          "names",
+                          "steamid",
+                          "user_steamid",
+                          "attacker_name",
+                          "attacker_steamid",
+                          "victim_name",
+                          "victim_steamid",]
+
 parser = -1
 
 def get_fields():
@@ -91,17 +127,17 @@ def get_player_names() -> list[str]:
     """
 
     names = parser.parse_player_info()['name'].tolist()
-
     return names
 
-def replace_csv_names(df:pandas.core.frame.DataFrame):
+def replace_df_names(df:pandas.core.frame.DataFrame):
     """replaces names in the 'name' column with a char"""
-    names = get_player_names(df)
+
+    alias_map = get_names_aliases()
     new_df = df.copy()
 
     # replacing names in the 'name' column
-    for i in range(0, NUM_PLAYERS):
-        new_df['name'] = new_df['name'].replace({names[i]: REPLACEMENT_NAMES[i]})
+    if "name" in new_df.columns:
+        new_df["name"] = new_df["name"].map(alias_map)
 
     return new_df
 
@@ -125,3 +161,20 @@ def events_2_json(filename:str):
         json.dump(event_data, f, indent=4)
 
     return event_data
+
+def get_all_events():
+    events = parser.list_game_events()
+    list = parser.parse_events(events)
+
+    return list
+
+def get_names_aliases():
+    """
+        Returns a mapping from a playername to an alias
+    """
+
+    names = parser.parse_player_info()['name'].tolist()
+    print(parser.parse_player_info())
+    name_to_alias = {name: alias for name, alias in zip(names, REPLACEMENT_NAMES)}
+
+    return name_to_alias
