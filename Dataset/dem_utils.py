@@ -2,14 +2,14 @@ from demoparser2 import DemoParser #https://github.com/LaihoE/demoparser
 import pandas
 import json
 import time
+
+import pandas.core
+import pandas.core.frame
 from demo_parser_fields import ALL_FIELDS
 
 START_BALANCE = 800
 MAX_HEALTH = 100.0
 NUM_PLAYERS = 10
-
-# if NUM_PLAYERS is altered from 10 the replacement names migh run into problems
-REPLACEMENT_NAMES = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]
 
 SENSITIVE_DATA_REMOVAL = ["crosshair_code",
                           "player_name",
@@ -45,7 +45,12 @@ SENSITIVE_DATA_REPLACE = ["name",
                           "attacker_name",
                           "attacker_steamid",
                           "victim_name",
-                          "victim_steamid",]
+                          "victim_steamid",
+                          "active_weapon_original_owner",
+                          "assister_name",
+                          "assister_steamid",
+                          #"approximate_spotted_by"
+                          ] # chat messages and cvar names
 
 parser = -1
 
@@ -102,7 +107,7 @@ def binary_search_sorted_dataframe(df:pandas.core.frame.DataFrame, col, val)-> i
 def remove_warmup_rounds(df: pandas.core.frame.DataFrame) -> pandas.core.frame.DataFrame:
     """removes the ticks corresponding to a warmup round for a given data frame"""
 
-    index = binary_search_sorted_dataframe(ticks_df,'is_warmup_period', False)
+    index = binary_search_sorted_dataframe(df,'is_warmup_period', False)
     return df.loc[index:].reset_index(drop=True)
 
 def get_tick(df:pandas.core.frame.DataFrame, index:int) -> pandas.core.frame.DataFrame:
@@ -119,27 +124,6 @@ def get_ticks(df:pandas.core.frame.DataFrame, start:int, end:int) -> pandas.core
     t = binary_search_sorted_dataframe(df, 'tick', end)
 
     return df.loc[s:t+NUM_PLAYERS-1].reset_index(drop=True)
-
-def get_player_names() -> list[str]:
-    """ 
-        Takes the playernames from the first tick. Note that this requires that 
-        there is a first tick in the dataframe
-    """
-
-    names = parser.parse_player_info()['name'].tolist()
-    return names
-
-def replace_df_names(df:pandas.core.frame.DataFrame):
-    """replaces names in the 'name' column with a char"""
-
-    alias_map = get_names_aliases()
-    new_df = df.copy()
-
-    # replacing names in the 'name' column
-    if "name" in new_df.columns:
-        new_df["name"] = new_df["name"].map(alias_map)
-
-    return new_df
 
 def events_2_json(filename:str):
     """
@@ -162,19 +146,64 @@ def events_2_json(filename:str):
 
     return event_data
 
+def event_list_2_json(list:list, filename:str):
+    
+    event_data = {}
+
+    for (s, df) in list:
+        dict = df.to_dict(orient="records")
+        event_data.update({s:dict})
+
+    with open(filename, "w") as f:
+        json.dump(event_data, f, indent=4)
+
 def get_all_events():
     events = parser.list_game_events()
     list = parser.parse_events(events)
 
     return list
 
-def get_names_aliases():
+def sensitive_data_events(l:list):
     """
-        Returns a mapping from a playername to an alias
+        Takes a list of tuples. This should represent the data in all events
     """
 
-    names = parser.parse_player_info()['name'].tolist()
-    print(parser.parse_player_info())
-    name_to_alias = {name: alias for name, alias in zip(names, REPLACEMENT_NAMES)}
+    altered_list = []
 
-    return name_to_alias
+    for (s, df) in l:
+        # remember to remove chat messages
+        df = remove_sensitive_data_df(df)
+        df = replace_sensitive_data_df(df)
+
+        altered_list.append((s, df))
+
+    return altered_list
+
+def get_player_nameid_dict():
+    player_info = parser.parse_player_info()
+
+    # creates a dict from the steamid and names to Player_x
+    steamid_to_player = {steamid: f'Player_{i+1}' for i, steamid in enumerate(player_info['steamid'].unique())}
+    name_to_player = {name: steamid_to_player[steamid] for steamid, name in zip(player_info['steamid'], player_info['name'])}
+    player_mapping = {**steamid_to_player, **name_to_player}
+    player_mapping = {str(key): value for key, value in player_mapping.items()}
+
+    return player_mapping
+
+def replace_sensitive_data_df(df:pandas.core.frame.DataFrame):
+    player_mapping = get_player_nameid_dict()
+
+    df_anonymised = df.copy()
+
+    for d in SENSITIVE_DATA_REPLACE:
+        if d in df_anonymised.columns:
+            df_anonymised[d] = df_anonymised[d].astype(str).map(player_mapping).fillna("")
+
+    return df_anonymised
+
+def remove_sensitive_data_df(df:pandas.core.frame.DataFrame):
+    df_anonymised = df.copy()
+
+    df_anonymised = df_anonymised.drop(columns=SENSITIVE_DATA_REMOVAL, errors='ignore') # 'ignore' ignores the errors raised by non-existing columns
+
+    return df_anonymised
