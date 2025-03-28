@@ -49,8 +49,8 @@ SENSITIVE_DATA_REPLACE = ["name",
                           "active_weapon_original_owner",
                           "assister_name",
                           "assister_steamid",
-                          #"approximate_spotted_by"
-                          ] # chat messages
+                          "approximate_spotted_by"
+                          ]
 
 parser = -1
 
@@ -202,7 +202,13 @@ def replace_sensitive_data_df(df:pandas.core.frame.DataFrame):
     df_anonymised = df.copy()
 
     for d in SENSITIVE_DATA_REPLACE:
+
         if d in df_anonymised.columns:
+            # Check if the column contains any lists
+            if df_anonymised[d].apply(lambda x: isinstance(x, list)).any():
+                df_anonymised[d] = df_anonymised[d].apply(lambda lst: [player_mapping.get(str(id)) for id in lst])
+                continue
+            
             df_anonymised[d] = df_anonymised[d].astype(str).map(player_mapping).fillna("")
 
     return df_anonymised
