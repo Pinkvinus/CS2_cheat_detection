@@ -208,7 +208,7 @@ def replace_sensitive_data_df(df:pandas.core.frame.DataFrame):
             if df_anonymised[d].apply(lambda x: isinstance(x, list)).any():
                 df_anonymised[d] = df_anonymised[d].apply(lambda lst: [player_mapping.get(str(id)) for id in lst])
                 continue
-            
+
             df_anonymised[d] = df_anonymised[d].astype(str).map(player_mapping).fillna("")
 
     return df_anonymised
@@ -219,3 +219,7 @@ def remove_sensitive_data_df(df:pandas.core.frame.DataFrame):
     df_anonymised = df_anonymised.drop(columns=SENSITIVE_DATA_REMOVAL, errors='ignore') # 'ignore' ignores the errors raised by non-existing columns
 
     return df_anonymised
+
+def create_cheater_df():
+
+    df = { "name" : [] }
