@@ -50,7 +50,7 @@ SENSITIVE_DATA_REPLACE = ["name",
                           "assister_name",
                           "assister_steamid",
                           #"approximate_spotted_by"
-                          ] # chat messages and cvar names
+                          ] # chat messages
 
 parser = -1
 
@@ -171,7 +171,13 @@ def sensitive_data_events(l:list):
     altered_list = []
 
     for (s, df) in l:
-        # remember to remove chat messages
+        if s == "chat_message": # Removes chat messages send in game from the data.
+            continue
+
+        if s == "server_cvar": # An outlier that has a "redactible" column with no sensitive information
+            altered_list.append((s, df))
+            continue
+
         df = remove_sensitive_data_df(df)
         df = replace_sensitive_data_df(df)
 

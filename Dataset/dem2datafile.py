@@ -34,7 +34,7 @@ for demo in os.listdir(INPUT_PATH):
     events_list = demu.sensitive_data_events(events_list)
 
     print("Writting data to csv file")
-    tick_df.to_json(path_or_buf=path + "ticks.json")
+    tick_df.to_csv(path_or_buf=path + "ticks.csv")
 
     print("Writting data to json file")
     demu.event_list_2_json(events_list, path + ".json")
