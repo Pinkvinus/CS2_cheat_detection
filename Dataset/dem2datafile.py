@@ -1,12 +1,17 @@
 from demoparser2 import DemoParser #https://github.com/LaihoE/demoparser
 import pandas
 import json
-from demo_parser_fields import ALL_FIELDS
-import dem_utils as demu
+from utils.demo_parser_fields import ALL_FIELDS
+import utils.dem_utils as demu
 import os
 
 INPUT_PATH = "./Demos"
 OUTPUT_PATH = "./Data"
+CHEATER_PATH = OUTPUT_PATH + "/with_cheater_present"
+NO_CHEATER_PATH = OUTPUT_PATH + "/no_cheater_present"
+SCRAPE_PATH = "cs_scrape_2025-03-28 17_09_24.042783.csv"
+SCRAPE_DF = pandas.read_csv()
+
 
 counter = 0
 
@@ -16,7 +21,7 @@ for demo in os.listdir(INPUT_PATH):
     demu.parser = DemoParser(INPUT_PATH + "/" + demo)
     path = OUTPUT_PATH + "/" + str(counter)
 
-    # loading the information
+    # loading the informations
     print("Parsing file")
     tick_df = demu.parser.parse_ticks(demu.ALL_FIELDS)
     events_list = demu.get_all_events()
