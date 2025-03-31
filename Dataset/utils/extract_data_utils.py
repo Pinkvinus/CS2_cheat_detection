@@ -42,7 +42,6 @@ def get_ticks(df:pandas.core.frame.DataFrame, start:int, end:int) -> pandas.core
 
     return df.loc[s:t+NUM_PLAYERS-1].reset_index(drop=True)
 
-
 def remove_warmup_rounds(df: pandas.core.frame.DataFrame) -> pandas.core.frame.DataFrame:
     """removes the ticks corresponding to a warmup round for a given data frame"""
 
