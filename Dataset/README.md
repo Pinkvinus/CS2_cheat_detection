@@ -62,3 +62,9 @@ The following data is the complete list of data, altered, in the dataset:
 - approximate_spotted_by
 
 
+Data added from scraping process:
+- Map
+- Average rank
+- Server
+- Matchmaking type
+- Cheater label
