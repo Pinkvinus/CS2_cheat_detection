@@ -1,5 +1,4 @@
 from demoparser2 import DemoParser #https://github.com/LaihoE/demoparser
-from csgo.sharecode import decode
 import pandas
 import json
 import time
@@ -50,7 +49,8 @@ SENSITIVE_DATA_REPLACE = ["name",
                           "active_weapon_original_owner",
                           "assister_name",
                           "assister_steamid",
-                          "approximate_spotted_by"
+                          "approximate_spotted_by",
+                          "cheater"
                           ]
 
 parser = -1
@@ -77,27 +77,6 @@ def df_to_readable_csv(df:pandas.core.frame.DataFrame, filename:str):
         # Write the data rows (with commas and aligned)
         for index, row in df_aligned.iterrows():
             f.write(','.join([str(row[col]).ljust(max_lengths[col]) for col in df.columns]) + '\n')
-
-def events_2_json(filename:str):
-    """
-        
-    """
-    events = parser.list_game_events()
-    event_data = {}
-
-    for e in events:
-        df = parser.parse_event(e)
-
-        if "user_steamid" in df.columns:
-            df = df.drop(columns=["user_steamid"])
-
-        dict = df.to_dict(orient="records")
-        event_data.update({e:dict})
-
-    with open(filename, "w") as f:
-        json.dump(event_data, f, indent=4)
-
-    return event_data
 
 def event_list_2_json(list:list, filename:str):
     
@@ -172,9 +151,3 @@ def remove_sensitive_data_df(df:pandas.core.frame.DataFrame):
     df_anonymised = df_anonymised.drop(columns=SENSITIVE_DATA_REMOVAL, errors='ignore') # 'ignore' ignores the errors raised by non-existing columns
 
     return df_anonymised
-
-def steamlink_to_sharecode(url:str):
-    return url.split("%20")[1]
-
-def sharecode_to_outcomeid(share_code):
-    return decode(share_code)["outcomeid"]
