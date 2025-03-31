@@ -22,6 +22,7 @@ pkgs.mkShell {
       source .venv/bin/activate
       pip install --upgrade pip
       pip install demoparser2
+      pip install csgo
     else
       source .venv/bin/activate
     fi
