@@ -12,7 +12,7 @@ The dataset is partitioned into data with at least one cheater present, and data
 > [!Warning]
 > Only files, containing at least one VAC(Valve Anti-cheat)-banned player, have been manually labelled and verifyed. Hence, **cheaters may be present in the data without cheaters**.
 > When examining a subset of NUMBER data points in the set of matches with no VAC-banned players, it was discovered that in NUMBER% of players in these matches were not presenting any cheater-like behaviour.
-> When examining a subset of NUMBER data points in the set of matches with with at least one VAC-banned players, it was discovered that in NUMBER% of players in these matches were not presenting any cheater-like behaviour. This is possibly due to CS2 using [trust factor match making](https://help.steampowered.com/en/faqs/view/00EF-D679-C76A-C185).
+> When examining a subset of NUMBER data points in the set of matches with with at least one VAC-banned players, it was discovered that in NUMBER% of players in these matches were not presenting any cheater-like behaviour[[TODO:CITE OUR PAPER]()]. This is possibly due to CS2 using [trust factor match making](https://help.steampowered.com/en/faqs/view/00EF-D679-C76A-C185).
 > Hence, it was decided, that resources were best spent with labelling data containing at least one VAC-banned player.
 
 ### Root folder
@@ -27,8 +27,37 @@ Each data point(counter strike match) is captured in 2 files:
 
 | Filetype | Sorting |Data Description |
 |----------|---------|-------------|
-| `.json`  | Events  | The data is stored by the event type. Each occurence of an event consequently stores the tick, in which the event occured. Note, that this file also contains general game information, such as the cheater labelling, map, and server settings. |
 | `.csv`   | Ticks   | The data is contained as a seried of events, also known as ticks. Each tick has 10 rows containing data on the 10 players. |
+| `.json`  | Events  | The data is stored by the event type. Each occurence of an event consequently stores the tick, in which the event occured. Note, that this file also contains general game information, such as the cheater labelling, map, and server settings. |
+
+## Loading dataset
+```python
+import pandas as pd
+import json
+import os
+
+filepath = "Data/no_cheater_present/0"
+
+# Loading csv tick data as a pd.DataFrame
+match_0_ticks = pd.read_csv(filepath_or_buffer=filepath+".csv.gz", compression="gzip")
+
+# Loading json event data a list of tuples (str, pd.Dataframe)
+def json_2_eventlist(filepath:str) -> list:   
+    with open(filepath, "r") as f:
+        json_data = json.load(f)
+
+    data = []       
+
+    for key, value in json_data.items():
+        if isinstance(value, list):
+            df = pd.DataFrame(value)
+            data.append((key, df))
+
+    return data
+
+match_0_events = json_2_eventlist(filepath=filepath+".json")
+```
+
 
 ## Data source
 
