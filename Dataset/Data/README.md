@@ -11,8 +11,9 @@ The dataset is partitioned into data with at least one cheater present, and data
 
 > Warning!
 > Only files, containing at least one VAC(Valve Anti-cheat)-banned player, have been manually labelled and verifyed. Hence, **cheaters may be present in the data without cheaters**.
-> When examining a subset of NUMBER data points in the `no_cheater_present` dataset, it was discovered that in NUMBER% of matches, no cheaters were present.
-> 
+> When examining a subset of NUMBER data points in the set of matches with no VAC-banned players, it was discovered that in NUMBER% of players in these matches were not presenting any cheater-like behaviour.
+> When examining a subset of NUMBER data points in the set of matches with with at least one VAC-banned players, it was discovered that in NUMBER% of players in these matches were not presenting any cheater-like behaviour. This is possibly due to CS2 using [trust factor match making](https://help.steampowered.com/en/faqs/view/00EF-D679-C76A-C185).
+> Hence, it was decided, that resources were best spent with labelling data containing at least one VAC-banned player.
 
 ### Root folder
 
