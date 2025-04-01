@@ -9,7 +9,7 @@ The **CS2CD (Counter-Strike 2 Cheat Detection)** dataset is an anonymised datase
 
 The dataset is partitioned into data with at least one cheater present, and data with no cheaters present. 
 
-> Warning!
+> [!Warning]
 > Only files, containing at least one VAC(Valve Anti-cheat)-banned player, have been manually labelled and verifyed. Hence, **cheaters may be present in the data without cheaters**.
 > When examining a subset of NUMBER data points in the set of matches with no VAC-banned players, it was discovered that in NUMBER% of players in these matches were not presenting any cheater-like behaviour.
 > When examining a subset of NUMBER data points in the set of matches with with at least one VAC-banned players, it was discovered that in NUMBER% of players in these matches were not presenting any cheater-like behaviour. This is possibly due to CS2 using [trust factor match making](https://help.steampowered.com/en/faqs/view/00EF-D679-C76A-C185).
