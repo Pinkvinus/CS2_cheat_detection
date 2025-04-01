@@ -146,7 +146,9 @@ CS2CD is well suited for the following tasks
 - Strategy analysis
 
 ## Acknowledgements
-supervisor?
+
+A big heartfelt thanks to [Paolo Burelli](http://paoloburelli.com/) for supervising the project.
+
 itu?
 
 ## License
