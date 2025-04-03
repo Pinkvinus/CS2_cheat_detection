@@ -60,8 +60,11 @@ for index, row in df.iterrows():
     print("Handling Events ========")
     events_list = demu.sensitive_data_events(events_list)
 
+    path = NO_CHEATER_PATH + "/" + str(counter)
 
-    path = OUTPUT_PATH + "/" + str(counter)
+    if len(cheaters) != 0:
+        path = CHEATER_PATH + "/" + str(counter)
+
     print("Writting data to csv file")
     tick_df.to_csv(path_or_buf=path + ".csv.gz", compression='gzip')
 
