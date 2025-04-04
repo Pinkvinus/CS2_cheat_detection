@@ -1,7 +1,7 @@
 import pandas as pd
 
 # Sample DataFrame
-df = pd.read_csv("Demo_data/cs_scrape_2025-04-01 19_38_27.339191.csv")
+df = pd.read_csv("../Demo_data/cs_scrape_2025-04-01 19_38_27.339191.csv")
 
 
 
