@@ -50,10 +50,10 @@ SENSITIVE_DATA_REPLACE = ["name",
                           "assister_name",
                           "assister_steamid",
                           "approximate_spotted_by",
-                          "cheater"
                           ]
 
 parser = -1
+player_mapping = {}
 
 def get_fields():
     with open("fields.txt", "r") as f:
