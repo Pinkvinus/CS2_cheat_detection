@@ -14,6 +14,7 @@ CHEATER_PATH = OUTPUT_PATH + "/with_cheater_present"
 NO_CHEATER_PATH = OUTPUT_PATH + "/no_cheater_present"
 
 SCRAPE_PATH = "./Demo_data/cs_scrape_2025-04-03.csv"
+TICK_FILETYPE = ".parquet"
 
 counter_no_cheater = 0
 counter_cheater = 0
@@ -23,7 +24,12 @@ df = scrape_df.dropna(subset=["demo_file_name"])
 df = df.drop(columns=["team1_string", "team2_string", "match_id"])
 df["cheater_names_str"] = df["cheater_names_str"].apply(ast.literal_eval)
 
+
 for index, row in df.iterrows():
+    print()
+    print(f'Cheater:     {counter_cheater}')
+    print(f'Not cheater: {counter_no_cheater}')
+    print(row['demo_file_name'])
 
     # Looks up cheater information
     cheaters = row["cheater_names_str"]
@@ -32,12 +38,13 @@ for index, row in df.iterrows():
     cheater_filepath = CHEATER_PATH + "/" + str(counter_cheater)
     no_cheater_filepath = NO_CHEATER_PATH + "/" + str(counter_no_cheater)
 
+
     # check if this file has already been parsed
-    if contains_cheaters and os.path.isfile(cheater_filepath + ".json") and os.path.isfile(cheater_filepath + ".csv.gz"):
+    if contains_cheaters and os.path.isfile(cheater_filepath + ".json") and os.path.isfile(cheater_filepath + TICK_FILETYPE):
         print(f"File '{counter_cheater}' already exists (with cheater)")
         counter_cheater = counter_cheater + 1
         continue
-    elif not contains_cheaters and os.path.isfile(no_cheater_filepath + ".json") and os.path.isfile(no_cheater_filepath + ".csv.gz"):
+    elif not contains_cheaters and os.path.isfile(no_cheater_filepath + ".json") and os.path.isfile(no_cheater_filepath + TICK_FILETYPE):
         print(f"File '{counter_no_cheater}' already exists")
         counter_no_cheater = counter_no_cheater + 1
         continue
@@ -49,6 +56,7 @@ for index, row in df.iterrows():
     print("Parsing file")
     tick_df = demu.parser.parse_ticks(demu.ALL_FIELDS)
     events_list = demu.get_all_events()
+    demu.update_player_mapping()
 
     if contains_cheaters:
 
@@ -88,7 +96,8 @@ for index, row in df.iterrows():
         counter_no_cheater = counter_no_cheater + 1
 
     print("Writting data to csv file")
-    tick_df.to_csv(path_or_buf=path + ".csv.gz", compression='gzip')
+    tick_df.to_parquet(path=path + TICK_FILETYPE, index=False)
+    #tick_df.to_csv(path_or_buf=path + ".csv")
 
     print("Writting data to json file")
     demu.event_list_2_json(events_list, path + ".json")
