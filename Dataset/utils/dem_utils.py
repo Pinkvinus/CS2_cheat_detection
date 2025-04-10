@@ -117,20 +117,20 @@ def sensitive_data_events(l:list):
 
     return altered_list
 
-def get_player_nameid_dict():
+def update_player_mapping():
     player_info = parser.parse_player_info()
 
     # creates a dict from the steamid and names to Player_x
     steamid_to_player = {steamid: f'Player_{i+1}' for i, steamid in enumerate(player_info['steamid'].unique())}
     name_to_player = {name: steamid_to_player[steamid] for steamid, name in zip(player_info['steamid'], player_info['name'])}
-    player_mapping = {**steamid_to_player, **name_to_player}
-    player_mapping = {str(key): value for key, value in player_mapping.items()}
+    pm = {**steamid_to_player, **name_to_player}
+    player_mapping.clear()
+    player_mapping.update({str(key): value for key, value in pm.items()})
 
-    return player_mapping
+    print(player_mapping)
+
 
 def replace_sensitive_data_df(df:pandas.core.frame.DataFrame):
-    player_mapping = get_player_nameid_dict()
-
     df_anonymised = df.copy()
 
     for d in SENSITIVE_DATA_REPLACE:
