@@ -44,7 +44,7 @@ filepath = "Data/no_cheater_present/0"
 match_0_ticks = pd.read_csv(filepath_or_buffer=filepath+".csv.gz", compression="gzip")
 
 # Loading json event data a list of tuples (str, pd.Dataframe)
-def json_2_eventlist(filepath:str) -&gt; list:   
+def json_2_eventlist(filepath:str) -> list[tuple[str, pd.DataFrame]]: 
     with open(filepath, "r") as f:
         json_data = json.load(f)
 
