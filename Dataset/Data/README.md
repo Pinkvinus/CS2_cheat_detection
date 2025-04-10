@@ -36,7 +36,6 @@ The following piece of code loads a single data point in the dataset. The result
 ```python
 import pandas as pd
 import json
-import os
 
 filepath = "Data/no_cheater_present/0"
 
