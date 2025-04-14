@@ -67,6 +67,7 @@ class MatchDataProcessor:
 
         # Make sure lengths match
         n = min(len(attacker_data["pitch"]), len(victim_data["X"]), len(attacker_data["yaw"]))
+        assert n == end_tick-start_tick, "Lenghts of data do not match"
 
         for i in range(n):
             dx = victim_data["X"][i] - attacker_data["X"][i]
