@@ -78,17 +78,6 @@ def df_to_readable_csv(df:pandas.core.frame.DataFrame, filename:str):
         for index, row in df_aligned.iterrows():
             f.write(','.join([str(row[col]).ljust(max_lengths[col]) for col in df.columns]) + '\n')
 
-def event_list_2_json(list:list, filename:str):
-    
-    event_data = {}
-
-    for (s, df) in list:
-        dict = df.to_dict(orient="records")
-        event_data.update({s:dict})
-
-    with open(filename, "w") as f:
-        json.dump(event_data, f, indent=4)
-
 def get_all_events():
     events = parser.list_game_events()
     list = parser.parse_events(events)

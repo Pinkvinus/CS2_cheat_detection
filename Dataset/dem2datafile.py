@@ -7,6 +7,7 @@ import utils.dem_utils as demu
 import os
 import sys
 import ast
+from utils.event_list_utils import event_list_2_json
 
 INPUT_PATH = "./Demo_data/Demos"
 OUTPUT_PATH = "./Data"
@@ -100,4 +101,4 @@ for index, row in df.iterrows():
     #tick_df.to_csv(path_or_buf=path + ".csv")
 
     print("Writting data to json file")
-    demu.event_list_2_json(events_list, path + ".json")
+    event_list_2_json(events_list, path + ".json")
