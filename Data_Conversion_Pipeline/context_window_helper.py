@@ -37,9 +37,11 @@ class MatchDataProcessor:
     
     def get_pitch_yaw_deltas(self, key, start_tick, end_tick, player):
         delta_values = []
-        values = self.match_ticks[(self.match_ticks["name"] == player) & 
-                                 (self.match_ticks["tick"] <= end_tick) & 
-                                 (self.match_ticks["tick"] > start_tick)][key].tolist()
+        values = self.get_tick_values(start_tick, end_tick, player, key)
+        # values = self.match_ticks[(self.match_ticks["name"] == player) & 
+        #                          (self.match_ticks["tick"] <= end_tick) & 
+        #                          (self.match_ticks["tick"] > start_tick)][key].tolist()
+        # Outdated way, delete when confirmed new way works
         values.insert(0, values[0])
         context_window_size = end_tick - start_tick
         if key == "pitch":
@@ -96,4 +98,9 @@ class MatchDataProcessor:
         """Returns the shortest difference between two yaw angles in degrees (-90 to 90)"""
         delta = (float(a2) - float(a1) + 90) % 180 - 90
         return delta
+    
+    def get_is_player_flashed(self, start_tick, end_tick, player):
+        vals = self.get_tick_values(start_tick, end_tick, player, "flash_duration")
+        vals = [1 if x > 0 else 0 for x in vals]
+        return vals
 
