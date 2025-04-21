@@ -4,6 +4,7 @@ from utils.demo_parser_fields import ALL_FIELDS
 import utils.dem_utils as demu
 import os
 import ast
+from utils.event_list_utils import event_list_2_json
 
 class CSDemoConverter():
 
@@ -79,3 +80,4 @@ class CSDemoConverter():
 conv = CSDemoConverter('','','',)
 
 conv.convert_file('./test/postest1.dem','./test_out/postest1')
+
