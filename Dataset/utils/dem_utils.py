@@ -116,8 +116,6 @@ def update_player_mapping():
     player_mapping.clear()
     player_mapping.update({str(key): value for key, value in pm.items()})
 
-    print(player_mapping)
-
 
 def replace_sensitive_data_df(df:pandas.core.frame.DataFrame):
     df_anonymised = df.copy()
