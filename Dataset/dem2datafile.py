@@ -21,7 +21,7 @@ class CSDemoConverter():
         self.counter_no_cheater = 0
         self.counter_cheater = 0
     
-    def convert_file(self, in_filepath, out_filepath, cheaters:list=None, csstats_info:pd.Series=None):
+    def convert_file(self, in_filepath, out_filepath, anon:bool=True, cheaters:list=None, csstats_info:pd.Series=None):
         """
             Converts a single demofile
         """
@@ -56,14 +56,16 @@ class CSDemoConverter():
 
             events_list.append(("CSstats_info", map_df))
         
-        print("Handling Ticks =========")
-        print("Removing sensitive data")
-        tick_df = demu.remove_sensitive_data_df(tick_df)
-        print("Replacing sensitive data")
-        tick_df = demu.replace_sensitive_data_df(tick_df)
 
-        print("Handling Events ========")
-        events_list = demu.sensitive_data_events(events_list)
+        if anon == True:
+            print("Handling Ticks =========")
+            print("Removing sensitive data")
+            tick_df = demu.remove_sensitive_data_df(tick_df)
+            print("Replacing sensitive data")
+            tick_df = demu.replace_sensitive_data_df(tick_df)
+
+            print("Handling Events ========")
+            events_list = demu.sensitive_data_events(events_list)
 
 
         print("Writting data to csv file")
@@ -71,7 +73,7 @@ class CSDemoConverter():
         #tick_df.to_csv(path_or_buf=path + ".csv")
 
         print("Writting data to json file")
-        demu.event_list_2_json(events_list, out_filepath + self.EVENT_FILETYPE)
+        event_list_2_json(events_list, out_filepath + self.EVENT_FILETYPE)
 
 
 
@@ -79,5 +81,5 @@ class CSDemoConverter():
 
 conv = CSDemoConverter('','','',)
 
-conv.convert_file('./test/postest1.dem','./test_out/postest1')
+conv.convert_file('./test/postest1.dem','./test/postest1', False)
 
