@@ -1,104 +1,83 @@
-# This is the main file for the parsing of the data
-
 from demoparser2 import DemoParser #https://github.com/LaihoE/demoparser
 import pandas as pd
 from utils.demo_parser_fields import ALL_FIELDS
 import utils.dem_utils as demu
 import os
-import sys
 import ast
 from utils.event_list_utils import event_list_2_json
 
-INPUT_PATH = "./Demo_data/Demos"
-OUTPUT_PATH = "./Data"
-CHEATER_PATH = OUTPUT_PATH + "/with_cheater_present"
-NO_CHEATER_PATH = OUTPUT_PATH + "/no_cheater_present"
+class CSDemoConverter():
 
-SCRAPE_PATH = "./Demo_data/cs_scrape_2025-04-03.csv"
-TICK_FILETYPE = ".parquet"
+    def __init__(self, input_path, output_path, scrape_path):
+        self.INPUT_PATH = input_path #"./Demo_data/Demos"
+        self.OUTPUT_PATH = output_path#"./Data"
+        self.CHEATER_PATH = self.OUTPUT_PATH + "/with_cheater_present"
+        self.NO_CHEATER_PATH = self.OUTPUT_PATH + "/no_cheater_present"
 
-counter_no_cheater = 0
-counter_cheater = 0
+        self.SCRAPE_PATH = scrape_path#"./Demo_data/cs_scrape_2025-04-03.csv"
+        self.TICK_FILETYPE = ".parquet"
+        self.EVENT_FILETYPE = ".json"
 
-scrape_df = pd.read_csv(SCRAPE_PATH)
-df = scrape_df.dropna(subset=["demo_file_name"])
-df = df.drop(columns=["team1_string", "team2_string", "match_id"])
-df["cheater_names_str"] = df["cheater_names_str"].apply(ast.literal_eval)
-
-
-for index, row in df.iterrows():
-    print()
-    print(f'Cheater:     {counter_cheater}')
-    print(f'Not cheater: {counter_no_cheater}')
-    print(row['demo_file_name'])
-
-    # Looks up cheater information
-    cheaters = row["cheater_names_str"]
-    contains_cheaters = len(cheaters) > 0
-
-    cheater_filepath = CHEATER_PATH + "/" + str(counter_cheater)
-    no_cheater_filepath = NO_CHEATER_PATH + "/" + str(counter_no_cheater)
-
-
-    # check if this file has already been parsed
-    if contains_cheaters and os.path.isfile(cheater_filepath + ".json") and os.path.isfile(cheater_filepath + TICK_FILETYPE):
-        print(f"File '{counter_cheater}' already exists (with cheater)")
-        counter_cheater = counter_cheater + 1
-        continue
-    elif not contains_cheaters and os.path.isfile(no_cheater_filepath + ".json") and os.path.isfile(no_cheater_filepath + TICK_FILETYPE):
-        print(f"File '{counter_no_cheater}' already exists")
-        counter_no_cheater = counter_no_cheater + 1
-        continue
-
-    # Updating parser with correct information
-    demu.parser = DemoParser(INPUT_PATH + "/" + row["demo_file_name"])
-
-    # loading the informations
-    print("Parsing file")
-    tick_df = demu.parser.parse_ticks(demu.ALL_FIELDS)
-    events_list = demu.get_all_events()
-    demu.update_player_mapping()
-
-    if contains_cheaters:
-
-        # Create a cheater dataframe
-        cheater_df = pd.DataFrame(columns=["name"])
-        
-        for c in cheaters:
-            new_row = pd.DataFrame({"name":[c]})
-            cheater_df = pd.concat([cheater_df, new_row], ignore_index=True)
-        
-        # add cheater dataframe to events_list
-        events_list.append(("cheaters", cheater_df))
-
-    # Add other info from csstats to events
-    map_df = pd.DataFrame({"map":[row["map"]], "server":[row["server"]],"avg_rank":[row["avg_rank"]],"match_making_type":[row["type"]]})
-
-    events_list.append(("CSstats_info", map_df))
+        self.counter_no_cheater = 0
+        self.counter_cheater = 0
     
+    def convert_file(self, in_filepath, out_filepath, cheaters:list=None, csstats_info:pd.Series=None):
+        """
+            Converts a single demofile
+        """
+
+        # Updating parser with correct information
+        demu.parser = DemoParser(in_filepath)
+
+        # loading the informations
+        print("Parsing file")
+        tick_df = demu.parser.parse_ticks(demu.ALL_FIELDS)
+        events_list = demu.get_all_events()
+        demu.update_player_mapping()
+
+        if cheaters is not None:
+
+            # Create a cheater dataframe
+            cheater_df = pd.DataFrame(columns=["name"])
+            
+            for c in cheaters:
+                new_row = pd.DataFrame({"name":[c]})
+                cheater_df = pd.concat([cheater_df, new_row], ignore_index=True)
+            
+            # add cheater dataframe to events_list
+            events_list.append(("cheaters", cheater_df))
+
+        if csstats_info is not None:
+            # Add other info from csstats to events
+            map_df = pd.DataFrame({"map":[csstats_info["map"]], 
+                                   "server":[csstats_info["server"]],
+                                   "avg_rank":[csstats_info["avg_rank"]],
+                                   "match_making_type":[csstats_info["type"]]})
+
+            events_list.append(("CSstats_info", map_df))
+        
+        print("Handling Ticks =========")
+        print("Removing sensitive data")
+        tick_df = demu.remove_sensitive_data_df(tick_df)
+        print("Replacing sensitive data")
+        tick_df = demu.replace_sensitive_data_df(tick_df)
+
+        print("Handling Events ========")
+        events_list = demu.sensitive_data_events(events_list)
 
 
-    print("Handling Ticks =========")
-    print("Replacing sensitive data")
-    tick_df = demu.replace_sensitive_data_df(tick_df)
-    print("Removing sensitive data")
-    tick_df = demu.remove_sensitive_data_df(tick_df)
+        print("Writting data to csv file")
+        tick_df.to_parquet(path=out_filepath + self.TICK_FILETYPE, index=False)
+        #tick_df.to_csv(path_or_buf=path + ".csv")
 
-    print("Handling Events ========")
-    events_list = demu.sensitive_data_events(events_list)
+        print("Writting data to json file")
+        demu.event_list_2_json(events_list, out_filepath + self.EVENT_FILETYPE)
 
-    path = ""
 
-    if len(cheaters) != 0:
-        path = CHEATER_PATH + "/" + str(counter_cheater)
-        counter_cheater = counter_cheater + 1
-    else:
-        path = NO_CHEATER_PATH + "/" + str(counter_no_cheater)
-        counter_no_cheater = counter_no_cheater + 1
 
-    print("Writting data to csv file")
-    tick_df.to_parquet(path=path + TICK_FILETYPE, index=False)
-    #tick_df.to_csv(path_or_buf=path + ".csv")
 
-    print("Writting data to json file")
-    event_list_2_json(events_list, path + ".json")
+
+conv = CSDemoConverter('','','',)
+
+conv.convert_file('./test/postest1.dem','./test_out/postest1')
+
