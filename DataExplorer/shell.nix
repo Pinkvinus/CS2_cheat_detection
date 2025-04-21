@@ -12,5 +12,7 @@ pkgs.mkShell {
     python3Packages.matplotlib
     python3Packages.ipython
     python3Packages.jupyter
+    python3Packages.pyarrow
+    python3Packages.fastparquet
   ];
 }
