@@ -5,6 +5,9 @@ class MatchDataProcessor:
     def __init__(self, match_ticks: pd.DataFrame):
         self.match_ticks = match_ticks
 
+    def get_all_values_for_player(self, player, key):
+        return self.match_ticks[self.match_ticks["name"] == player][key].tolist()
+
     def get_tick_values_multiple(self, start_tick, end_tick, player, columns):
         filtered = self.match_ticks[
             (self.match_ticks["name"] == player) &
@@ -35,15 +38,11 @@ class MatchDataProcessor:
             end_ticks.append(tick + tick_after_kill)
         return (start_ticks, end_ticks)
     
-    def get_pitch_yaw_deltas(self, key, start_tick, end_tick, player):
+    def get_pitch_yaw_deltas(self, key, start_tick, end_tick, context_window_size, player):
         delta_values = []
         values = self.get_tick_values(start_tick, end_tick, player, key)
-        # values = self.match_ticks[(self.match_ticks["name"] == player) & 
-        #                          (self.match_ticks["tick"] <= end_tick) & 
-        #                          (self.match_ticks["tick"] > start_tick)][key].tolist()
-        # Outdated way, delete when confirmed new way works
         values.insert(0, values[0])
-        context_window_size = end_tick - start_tick
+
         if key == "pitch":
             for i in range(1, context_window_size + 1):
                 delta_values.append(self.pitch_delta(values[i-1], values[i]))
@@ -60,18 +59,14 @@ class MatchDataProcessor:
         yaw = np.degrees(np.arctan2(dy, dx))
         return pitch, yaw
     
-    def get_pitch_yaw_head_deltas(self, start_tick, end_tick, attacker, victim):
+    def get_pitch_yaw_head_deltas(self, start_tick, end_tick, context_window_size, attacker, victim):
         pitch_deltas = []
         yaw_deltas = []
 
         attacker_data = self.get_tick_values_multiple(start_tick, end_tick, attacker, ["X", "Y", "Z", "pitch", "yaw"])
         victim_data = self.get_tick_values_multiple(start_tick, end_tick, victim, ["X", "Y", "Z"])
 
-        # Make sure lengths match
-        n = min(len(attacker_data["pitch"]), len(victim_data["X"]), len(attacker_data["yaw"]))
-        assert n == end_tick-start_tick, "Lenghts of data do not match"
-
-        for i in range(n):
+        for i in range(context_window_size):
             dx = victim_data["X"][i] - attacker_data["X"][i]
             dy = victim_data["Y"][i] - attacker_data["Y"][i]
             dz = victim_data["Z"][i] - attacker_data["Z"][i]
@@ -101,6 +96,37 @@ class MatchDataProcessor:
     
     def get_is_player_flashed(self, start_tick, end_tick, player):
         vals = self.get_tick_values(start_tick, end_tick, player, "flash_duration")
-        vals = [1 if x > 0 else 0 for x in vals]
+        vals = self.variable_flashbang_decay(vals)
         return vals
+    
+    def variable_flashbang_decay(self, values):
+        """
+            This function is meant to format the demo file flashbang data. In a demo, only the duration of the flash
+            is given and the value is the length of the flash in seconds. This function creates a linear decay from 1 to 0
+            over that time period to sort of simulate the flashbang decay.
+        """
+        output = [0] * len(values)
+        i = 0
+        n = len(values)
+
+        while i < n:
+            if values[i] > 0:
+                # Start of a non-zero streak
+                start = i
+                current_val = values[i]
+
+                # Find how long the streak goes
+                while i < n and values[i] == current_val:
+                    i += 1
+                end = i
+                decay_length = end - start
+
+                # Apply linear decay from 1 to 0 over decay_length
+                for j in range(decay_length):
+                    output[start + j] = 1 - (j / decay_length)
+            else:
+                i += 1  # move to next value if zero
+
+        return output
+
 
