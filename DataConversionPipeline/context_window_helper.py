@@ -1,9 +1,12 @@
 import pandas as pd
 import numpy as np
+from IPython.display import display
 
 class MatchDataProcessor:
-    def __init__(self, match_ticks: pd.DataFrame):
+    def __init__(self, match_ticks: pd.DataFrame, match_events: pd.DataFrame, context_window_size):
         self.match_ticks = match_ticks
+        self.match_events = match_events
+        self.context_window_size = context_window_size
 
     def get_all_values_for_player(self, player, key):
         return self.match_ticks[self.match_ticks["name"] == player][key].tolist()
@@ -22,15 +25,16 @@ class MatchDataProcessor:
                                  (self.match_ticks["tick"] > start_tick)][key].tolist()
         return values
 
-    def get_player_kills(self, events, player_name, player_death_idx):
-        player_deaths = events[player_death_idx][1]
+    def get_player_kills(self, player_name, player_death_idx):
+        player_deaths = self.match_events[player_death_idx][1]
         return player_deaths[player_deaths["attacker_name"] == player_name]
     
-    def get_victim_names(self, events, player_name, player_death_idx):
-        victims = events[player_death_idx][1]
-        return victims[victims["attacker_name"] == player_name]
+    # def get_victim_names(self, events, player_name, player_death_idx):
+        # victims = events[player_death_idx][1]
+        # return victims[victims["attacker_name"] == player_name]
 
-    def get_context_window_ticks(self, player_deaths, ticks_before_kill, tick_after_kill):
+    def get_context_window_ticks(self, ticks_before_kill, tick_after_kill, player, player_death_idx):
+        player_deaths = self.get_player_kills(player, player_death_idx)
         start_ticks = []
         end_ticks = []
         for tick in player_deaths["tick"]:
@@ -38,16 +42,16 @@ class MatchDataProcessor:
             end_ticks.append(tick + tick_after_kill)
         return (start_ticks, end_ticks)
     
-    def get_pitch_yaw_deltas(self, key, start_tick, end_tick, context_window_size, player):
+    def get_pitch_yaw_deltas(self, key, start_tick, end_tick, player):
         delta_values = []
         values = self.get_tick_values(start_tick, end_tick, player, key)
         values.insert(0, values[0])
 
         if key == "pitch":
-            for i in range(1, context_window_size + 1):
+            for i in range(1, self.context_window_size + 1):
                 delta_values.append(self.pitch_delta(values[i-1], values[i]))
         elif key == "yaw":
-            for i in range(1, context_window_size + 1):
+            for i in range(1, self.context_window_size + 1):
                 delta_values.append(self.yaw_delta(values[i-1], values[i]))
 
         return delta_values
@@ -90,7 +94,7 @@ class MatchDataProcessor:
         return delta
     
     def pitch_delta(self, a1, a2):
-        """Returns the shortest difference between two yaw angles in degrees (-90 to 90)"""
+        """Returns the shortest difference between two angles in degrees (-90 to 90)"""
         delta = (float(a2) - float(a1) + 90) % 180 - 90
         return delta
     
@@ -128,5 +132,40 @@ class MatchDataProcessor:
                 i += 1  # move to next value if zero
 
         return output
+    
+    def get_attacker_shots(self, start_tick, end_tick, player, weapon_fire_idx):
+        shots = self.match_events[weapon_fire_idx][1]
+        player_shots = shots[(shots["user_name"] == player) & (shots["tick"] >= start_tick) & (shots["tick"] < end_tick)]["tick"].tolist()
+        data = np.zeros(self.context_window_size)
+        for i, val in enumerate(player_shots):
+            player_shots[i] = val - start_tick
+        for i in player_shots:
+            data[i] = 1
+        return data
+    
+    def get_attacker_kill_data(self, start_tick, end_tick, player, player_death_idx):
+        kills = self.get_player_kills(player, player_death_idx)
+        kills = kills[(kills["tick"] >= start_tick) & (kills["tick"] < end_tick)][["tick", "thrusmoke", "penetrated", "attackerinair"]]
+        kills_thrusmoke = kills["thrusmoke"].tolist()
+        kills_tick = kills["tick"].tolist()
+        kills_wallbang = kills["penetrated"].tolist()
+        kills_inair = kills["attackerinair"].tolist()
+        print(kills_inair)
+        data_kill = np.zeros(self.context_window_size)
+        data_thrusmoke = np.zeros(self.context_window_size)
+        data_wallbang = np.zeros(self.context_window_size)
+        data_inair = np.zeros(self.context_window_size)
+        for i, val in enumerate(kills_tick):
+            kills_tick[i] = val - start_tick
+        for i, val in enumerate(kills_tick):
+            data_kill[val] = 1
+            if kills_thrusmoke[i]:
+                data_thrusmoke[val] = 1
+            if kills_wallbang[i] > 0:
+                data_wallbang[val] = 1
+            if kills_inair[i]:
+                data_inair[val] = 1
+        return data_kill, data_thrusmoke, data_wallbang, data_inair
+        
 
 
