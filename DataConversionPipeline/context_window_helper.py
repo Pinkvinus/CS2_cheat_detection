@@ -167,5 +167,23 @@ class MatchDataProcessor:
                 data_inair[val] = 1
         return data_kill, data_thrusmoke, data_wallbang, data_inair
         
+    weapon_knife = {"knife_t", "knife", "Bayonet", "Bowie Knife", "Butterfly Knife", "Classic Knife", "Falchion Knife", "Flip Knife", "Gut Knife", "Huntsman Knife", "Karambit", "Kukri Knife", "M9 Bayonet", "Navaja Knife", "Nomad Knife", "Paracord Knife", "Shadow Daggers", "Skeleton Knife", "Stiletto Knife", "Survival Knife", "Talon Knife", "Ursus Knife"}
+    # MISSING SOME
+    weapon_auto_rifle = {"AK-47", "M4A1-S", "Galil AR", "SG 553", "M4A4", "AUG", "FAMAS", "M249", "Negev"}
+    # MISSING SCAR
+    weapon_semi_rifle = {"G3SG1", "SSG 08", "AWP", "SCAR-20"}
+
+    weapon_other = {"C4 Explosive", "None", "Zeus x27"}
+
+    weapon_pistols = {"CZ75-Auto", "Desert Eagle", "Dual Berettas", "Five-SeveN", "Glock-18", "P2000", "P250", "R8 Revolver", "Tec-9", "USP-S"}
+
+    weapon_grenade = {"Decoy Grenade", "Flashbang", "High Explosive Grenade", "Incendiary Grenade", "Molotov", "Smoke Grenade"}
+
+    weapon_smg = {"MAC-10", "MP5-SD", "MP7", "MP9", "P90", "PP-Bizon", "UMP-45"}
+
+    weapon_shotgun = {"MAG-7", "Nova", "Sawed-Off", "XM1014"}
+
+    def get_attacker_weapon(self, start_tick, end_tick, player):
+        ...
 
 
