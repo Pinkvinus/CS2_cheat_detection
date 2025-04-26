@@ -135,6 +135,7 @@ class MatchDataProcessor:
     
     def get_attacker_shots(self, start_tick, end_tick, player, weapon_fire_idx):
         shots = self.match_events[weapon_fire_idx][1]
+        print(shots)
         player_shots = shots[(shots["user_name"] == player) & (shots["tick"] >= start_tick) & (shots["tick"] < end_tick)]["tick"].tolist()
         data = np.zeros(self.context_window_size)
         for i, val in enumerate(player_shots):
@@ -150,7 +151,6 @@ class MatchDataProcessor:
         kills_tick = kills["tick"].tolist()
         kills_wallbang = kills["penetrated"].tolist()
         kills_inair = kills["attackerinair"].tolist()
-        print(kills_inair)
         data_kill = np.zeros(self.context_window_size)
         data_thrusmoke = np.zeros(self.context_window_size)
         data_wallbang = np.zeros(self.context_window_size)
@@ -168,12 +168,12 @@ class MatchDataProcessor:
         return data_kill, data_thrusmoke, data_wallbang, data_inair
         
     weapon_knife = {"Zeus x27", "knife_t", "knife", "Bayonet", "Bowie Knife", "Butterfly Knife", "Classic Knife", "Falchion Knife", "Flip Knife", "Gut Knife", "Huntsman Knife", "Karambit", "Kukri Knife", "M9 Bayonet", "Navaja Knife", "Nomad Knife", "Paracord Knife", "Shadow Daggers", "Skeleton Knife", "Stiletto Knife", "Survival Knife", "Talon Knife", "Ursus Knife"}
-    # MISSING SOME
+    
     weapon_auto_rifle = {"AK-47", "M4A1-S", "Galil AR", "SG 553", "M4A4", "AUG", "FAMAS", "M249", "Negev"}
-    # MISSING SCAR
+    
     weapon_semi_rifle = {"G3SG1", "SSG 08", "AWP", "SCAR-20"}
 
-    weapon_dead = {"None"}
+    weapon_dead = {None}
 
     weapon_pistols = {"CZ75-Auto", "Desert Eagle", "Dual Berettas", "Five-SeveN", "Glock-18", "P2000", "P250", "R8 Revolver", "Tec-9", "USP-S"}
 
@@ -183,7 +183,117 @@ class MatchDataProcessor:
 
     weapon_shotgun = {"MAG-7", "Nova", "Sawed-Off", "XM1014"}
 
-    def get_attacker_weapon(self, start_tick, end_tick, player):
-        ...
+    # weapon_dict = {
+    #     "knife" : weapon_knife,
+    #     "auto_rifle": weapon_auto_rifle,
+    #     "semi_rifle": weapon_semi_rifle,
+    #     "dead": weapon_dead,
+    #     "pistols": weapon_pistols,
+    #     "grenades": weapon_grenade,
+    #     "smg": weapon_smg,
+    #     "shotgun": weapon_shotgun
+    # }
 
+    def get_attacker_weapon(self, start_tick, end_tick, player):
+        used_weapons = self.get_tick_values(start_tick, end_tick, player, "active_weapon_name")
+        
+        weapon_knife_data = []
+        weapon_auto_rifle_data = []
+        weapon_semi_rifle_data = []
+        weapon_pistols_data = []
+        weapon_grenade_data = []
+        weapon_smg_data = []
+        weapon_shotgun_data = []
+
+        for weapon in used_weapons:
+
+            if weapon is None:
+                weapon_knife_data.append(0)
+                weapon_auto_rifle_data.append(0)
+                weapon_semi_rifle_data.append(0)
+                weapon_pistols_data.append(0)
+                weapon_grenade_data.append(0)
+                weapon_smg_data.append(0)
+                weapon_shotgun_data.append(0)
+                continue
+
+            if weapon in self.weapon_knife:
+                weapon_knife_data.append(1)
+                weapon_auto_rifle_data.append(0)
+                weapon_semi_rifle_data.append(0)
+                weapon_pistols_data.append(0)
+                weapon_grenade_data.append(0)
+                weapon_smg_data.append(0)
+                weapon_shotgun_data.append(0)
+                continue
+         
+            elif weapon in self.weapon_auto_rifle:
+                weapon_knife_data.append(0)
+                weapon_auto_rifle_data.append(1)
+                weapon_semi_rifle_data.append(0)
+                weapon_pistols_data.append(0)
+                weapon_grenade_data.append(0)
+                weapon_smg_data.append(0)
+                weapon_shotgun_data.append(0)
+                continue
+    
+            elif weapon in self.weapon_semi_rifle:
+                weapon_knife_data.append(0)
+                weapon_auto_rifle_data.append(0)
+                weapon_semi_rifle_data.append(1)
+                weapon_pistols_data.append(0)
+                weapon_grenade_data.append(0)
+                weapon_smg_data.append(0)
+                weapon_shotgun_data.append(0)
+                continue
+    
+            elif weapon in self.weapon_pistols:
+                weapon_knife_data.append(0)
+                weapon_auto_rifle_data.append(0)
+                weapon_semi_rifle_data.append(0)
+                weapon_pistols_data.append(1)
+                weapon_grenade_data.append(0)
+                weapon_smg_data.append(0)
+                weapon_shotgun_data.append(0)
+                continue
+    
+            elif weapon in self.weapon_grenade:
+                weapon_knife_data.append(0)
+                weapon_auto_rifle_data.append(0)
+                weapon_semi_rifle_data.append(0)
+                weapon_pistols_data.append(0)
+                weapon_grenade_data.append(1)
+                weapon_smg_data.append(0)
+                weapon_shotgun_data.append(0)
+                continue
+    
+            elif weapon in self.weapon_smg:
+                weapon_knife_data.append(0)
+                weapon_auto_rifle_data.append(0)
+                weapon_semi_rifle_data.append(0)
+                weapon_pistols_data.append(0)
+                weapon_grenade_data.append(0)
+                weapon_smg_data.append(1)
+                weapon_shotgun_data.append(0)
+                continue
+    
+            elif weapon in self.weapon_shotgun:
+                weapon_knife_data.append(0)
+                weapon_auto_rifle_data.append(0)
+                weapon_semi_rifle_data.append(0)
+                weapon_pistols_data.append(0)
+                weapon_grenade_data.append(0)
+                weapon_smg_data.append(0)
+                weapon_shotgun_data.append(1)
+                continue
+        
+        return (weapon_knife_data, 
+                weapon_auto_rifle_data, 
+                weapon_semi_rifle_data,
+                weapon_pistols_data,
+                weapon_grenade_data,
+                weapon_smg_data,
+                weapon_shotgun_data)
+
+            
 
