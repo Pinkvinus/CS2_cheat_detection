@@ -29,9 +29,11 @@ class MatchDataProcessor:
         player_deaths = self.match_events[player_death_idx][1]
         return player_deaths[player_deaths["attacker_name"] == player_name]
     
-    # def get_victim_names(self, events, player_name, player_death_idx):
-        # victims = events[player_death_idx][1]
-        # return victims[victims["attacker_name"] == player_name]
+    def get_player_team(self, start_tick, end_tick, player):
+        vals = self.get_tick_values(start_tick, end_tick, player, "team_name")
+        for val in vals:
+            if val is not None:
+                return val
 
     def get_context_window_ticks(self, ticks_before_kill, tick_after_kill, player, player_death_idx):
         player_deaths = self.get_player_kills(player, player_death_idx)
@@ -41,6 +43,28 @@ class MatchDataProcessor:
             start_ticks.append(tick - ticks_before_kill)
             end_ticks.append(tick + tick_after_kill)
         return (start_ticks, end_ticks)
+    
+    dust2_min_max = {
+        "X": (-2300, 1800),
+        "Y": (-1200, 3150),
+        "Z": (-130, 400)
+    }
+
+    mirage_min_max = {
+        "X": (-2700, 1500),
+        "Y": (-2700, 1000),
+        "Z": (0, 0)
+    }
+
+    inferno_min_max = {
+        "X": (-1800, 2700),
+        "Y": (-800, 3600),
+        "Z": (-100, 500)
+    }
+    
+    def get_player_coordinates(self, start_tick, end_tick, player):
+        coords = self.get_tick_values_multiple(start_tick, end_tick, player, ["X", "Y", "Z"])
+
     
     def get_pitch_yaw_deltas(self, key, start_tick, end_tick, player):
         delta_values = []
@@ -135,8 +159,9 @@ class MatchDataProcessor:
     
     def get_attacker_shots(self, start_tick, end_tick, player, weapon_fire_idx):
         shots = self.match_events[weapon_fire_idx][1]
-        print(shots)
-        player_shots = shots[(shots["user_name"] == player) & (shots["tick"] >= start_tick) & (shots["tick"] < end_tick)]["tick"].tolist()
+        player_shots = shots[(shots["user_name"] == player) & 
+                             (shots["tick"] >= start_tick) & 
+                             (shots["tick"] < end_tick)]["tick"].tolist()
         data = np.zeros(self.context_window_size)
         for i, val in enumerate(player_shots):
             player_shots[i] = val - start_tick
@@ -294,6 +319,41 @@ class MatchDataProcessor:
                 weapon_grenade_data,
                 weapon_smg_data,
                 weapon_shotgun_data)
-
-            
-
+    
+    def get_player_made_noise(self, start_tick, end_tick, player, weapon_fire_idx):
+        velocity = self.get_tick_values(start_tick, end_tick, player, "velocity")
+        shots = self.get_attacker_shots(start_tick, end_tick, player, weapon_fire_idx)
+        footsteps = []
+        for v in velocity:
+            if v >= 140:
+                footsteps.append(1)
+            else:
+                footsteps.append(0)
+        data = []
+        for idx, v in enumerate(shots):
+            val = 0
+            if shots[idx] == 1:
+                val += 0.5
+            if footsteps[idx] == 1:
+                val += 0.5
+            data.append(val)
+        return data
+    
+    def get_played_map(self, played_map):
+        zeros = np.zeros(1024)
+        ones = np.ones(1024)
+    
+        maps = [
+            "de_dust2", "de_mirage", "de_inferno", "de_train", "de_nuke",
+            "de_ancient", "de_vertigo", "de_anubis", "cs_office", "de_overpass",
+            "de_basalt", "de_edin", "cs_italy", "de_thera", "de_mills"
+        ]
+    
+        outputs = []
+        for map_name in maps:
+            if played_map == map_name:
+                outputs.append(ones)
+            else:
+                outputs.append(zeros)
+    
+        return tuple(outputs)
