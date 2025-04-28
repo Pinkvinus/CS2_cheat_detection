@@ -8,6 +8,10 @@ class MatchDataProcessor:
         self.match_events = match_events
         self.context_window_size = context_window_size
 
+    def normalize(self, value, min_val, max_val):
+        normalized = (value - min_val) / (max_val - min_val)
+        return normalized
+
     def get_all_values_for_player(self, player, key):
         return self.match_ticks[self.match_ticks["name"] == player][key].tolist()
 
@@ -43,42 +47,78 @@ class MatchDataProcessor:
             start_ticks.append(tick - ticks_before_kill)
             end_ticks.append(tick + tick_after_kill)
         return (start_ticks, end_ticks)
-    
-    dust2_min_max = {
-        "X": (-2300, 1800),
-        "Y": (-1200, 3150),
-        "Z": (-130, 400)
-    }
 
-    mirage_min_max = {
-        "X": (-2700, 1500),
-        "Y": (-2700, 1000),
-        "Z": (0, 0)
-    }
-
-    inferno_min_max = {
-        "X": (-1800, 2700),
-        "Y": (-800, 3600),
-        "Z": (-100, 500)
+    # (X_min, X_max, Y_min, Y_max, Z_min, Z_max)
+    map_min_max = {
+        "de_dust2": (-2300, 1800, -1200, 3150, -130, 400),
+        "de_mirage": (-2700, 1500, -2700, 1000, -400, 150),
+        "de_inferno": (-1800, 2700, -800, 3600, -100, 500),
+        "de_train": (-2200, 1800, -1800, 1800, -400, 200),
+        "de_nuke": (-3000, 3500, -2500, 1000, -750, 100),
+        "de_ancient": (-2310, 1400, -2600, 1800, -120, 400),
+        "de_vertigo": (-2700, 100, -1600, 1200, 11400, 12100),
+        "de_anubis": (-2000, 1810, -1810, 3200, -150, 200),
+        "cs_office": (-1800, 2400, -2200, 1300, -350, 10),
+        "de_overpass": (-4000, 20, -3500, 1700, 0, 800),
+        "de_basalt": (-2100, 2000, -1700, 2350, -100, 400),
+        "de_edin": (500, 3700, -350, 4300, 300, 750),
+        "cs_italy": (-1550, 1100, -2200, 2650, -200, 300),
+        "de_thera": (600, 4300, -2600, 2200, -170, 300),
+        "de_mills": (-4300, 0, -5560, -300, -100, 300)
     }
     
-    def get_player_coordinates(self, start_tick, end_tick, player):
+    def get_player_coordinates(self, start_tick, end_tick, player, map_name):
         coords = self.get_tick_values_multiple(start_tick, end_tick, player, ["X", "Y", "Z"])
+        
+        if map_name not in self.map_min_max:
+            raise ValueError(f"Unknown map: {map_name}")
 
+        min_x, max_x, min_y, max_y, min_z, max_z = self.map_min_max[map_name]
+
+        X_normalized = [self.normalize(x, min_x, max_x) for x in coords["X"]]
+        Y_normalized = [self.normalize(y, min_y, max_y) for y in coords["Y"]]
+        Z_normalized = [self.normalize(z, min_z, max_z) for z in coords["Z"]]
+        X_normalized = np.clip(X_normalized, 0, 1)
+        Y_normalized = np.clip(Y_normalized, 0, 1)
+        Z_normalized = np.clip(Z_normalized, 0, 1)
+
+        return (X_normalized, Y_normalized, Z_normalized)
+
+    def get_player_velocity(self, start_tick, end_tick, player):
+        vels = self.get_tick_values(start_tick, end_tick, player, "velocity")
+        vels = [250 if x > 500 else x for x in vels]
+        vel_normalized = [self.normalize(x, 0, 250) for x in vels]
+        return vel_normalized
     
+    def normalize_pitch(self, p):
+        return [self.normalize(z, -90, 90) for z in p]
+    
+    def normalize_yaw(self, y):
+        return [self.normalize(z, -180, 180) for z in y]
+    
+    def get_player_pitch(self, start_tick, end_tick, player):
+        p = self.get_tick_values(start_tick, end_tick, player, "pitch")
+        p_norm = self.normalize_pitch(p)
+        return p_norm
+    
+    def get_player_yaw(self, start_tick, end_tick, player):
+        y = self.get_tick_values(start_tick, end_tick, player, "yaw")
+        y_norm = self.normalize_yaw(y)
+        return y_norm
+
     def get_pitch_yaw_deltas(self, key, start_tick, end_tick, player):
-        delta_values = []
         values = self.get_tick_values(start_tick, end_tick, player, key)
         values.insert(0, values[0])
 
-        if key == "pitch":
-            for i in range(1, self.context_window_size + 1):
-                delta_values.append(self.pitch_delta(values[i-1], values[i]))
-        elif key == "yaw":
-            for i in range(1, self.context_window_size + 1):
-                delta_values.append(self.yaw_delta(values[i-1], values[i]))
+        values = np.array(values)
+        deltas = np.diff(values)
 
-        return delta_values
+        if key == "pitch":
+            deltas = np.clip(np.abs(deltas) / 45, 0, 1)
+        elif key == "yaw":
+            deltas = np.clip(np.abs(deltas) / 90, 0, 1)
+
+        return deltas.tolist()
     
     def _calculate_pitch_yaw(self, dx, dy, dz):
         # Pitch: vertical angle (looking up/down)
@@ -110,7 +150,10 @@ class MatchDataProcessor:
             pitch_deltas.append(pitch_delta)
             yaw_deltas.append(yaw_delta)
 
-        return pitch_deltas, yaw_deltas
+        pitch_deltas_normalized = [np.clip(abs(val), 0, 45) / 45 for val in pitch_deltas]
+        yaw_deltas_normalized = [np.clip(abs(val), 0, 90) / 90 for val in yaw_deltas]
+
+        return pitch_deltas_normalized, yaw_deltas_normalized
     
     def yaw_delta(self, a1, a2):
         """Returns the shortest difference between two angles in degrees (-180 to 180)"""
@@ -207,17 +250,6 @@ class MatchDataProcessor:
     weapon_smg = {"MAC-10", "MP5-SD", "MP7", "MP9", "P90", "PP-Bizon", "UMP-45"}
 
     weapon_shotgun = {"MAG-7", "Nova", "Sawed-Off", "XM1014"}
-
-    # weapon_dict = {
-    #     "knife" : weapon_knife,
-    #     "auto_rifle": weapon_auto_rifle,
-    #     "semi_rifle": weapon_semi_rifle,
-    #     "dead": weapon_dead,
-    #     "pistols": weapon_pistols,
-    #     "grenades": weapon_grenade,
-    #     "smg": weapon_smg,
-    #     "shotgun": weapon_shotgun
-    # }
 
     def get_attacker_weapon(self, start_tick, end_tick, player):
         used_weapons = self.get_tick_values(start_tick, end_tick, player, "active_weapon_name")
@@ -319,6 +351,11 @@ class MatchDataProcessor:
                 weapon_grenade_data,
                 weapon_smg_data,
                 weapon_shotgun_data)
+    
+    def get_player_health(self, start_tick, end_tick, player):
+        health = self.get_tick_values(start_tick, end_tick, player, "health")
+        health_norm = [val / 100 for val in health]
+        return health_norm
     
     def get_player_made_noise(self, start_tick, end_tick, player, weapon_fire_idx):
         velocity = self.get_tick_values(start_tick, end_tick, player, "velocity")
