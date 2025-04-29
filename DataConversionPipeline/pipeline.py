@@ -32,7 +32,7 @@ context_window_vals = ["attacker_X", "attacker_Y", "attacker_Z", "attacker_vel",
                        "victim_X", "victim_Y", "victim_Z", "victim_health", "victim_noise", "map_dust2", "map_mirage", "map_inferno", "map_train",
                        "map_nuke", "map_ancient", "map_vertigo", "map_anubis", "map_office", "map_overpass", "map_basalt", "map_edin", "map_italy", "map_thera", "map_mills"]
 
-for file_idx in range(1):
+for file_idx in range(10):
 # for file_idx in range(317):
     match_ticks = pd.read_parquet(path=f"{filepath}\{file_idx}.parquet")
     match_events = json_2_eventlist(filepath=f"{filepath}\{file_idx}.json")
@@ -133,11 +133,12 @@ for file_idx in range(1):
              context_window["map_mills"]) = MDP.get_played_map(played_map)
 
             # Filename structure: c(cheater dataset)/n(not cheater dataset)_c(player cheater)/n(player not cheater)_fileidx_playername_killnr.parquet
-            c_n = "c" if is_attacker_cheater else "n"
+            c_n = "cheater" if is_attacker_cheater else "notcheater"
 
             cheater_out_dir = r"C:\Users\Gert\Desktop\context_windows\cheater"
             non_cheater_out_dir = r"C:\Users\Gert\Desktop\context_windows\not_cheater"
 
-            out_dir = cheater_out_dir if c_n == "c" else non_cheater_out_dir
-            context_window.to_parquet(fr"{out_dir}\{is_cheater_data}-{c_n}-{file_idx}-{attacker}-{i}.parquet", index=False)
-    print(f"file idx {file_idx} done")        
+            out_dir = cheater_out_dir if c_n == "cheater" else non_cheater_out_dir
+            context_window.to_parquet(fr"{out_dir}\{is_cheater_data}-{c_n}-file_{file_idx}-{attacker}-kill_{i}.parquet", index=False)
+
+    print(f"file idx {file_idx} done")
