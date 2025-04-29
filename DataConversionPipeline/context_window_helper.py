@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from IPython.display import display
+import math
 
 class MatchDataProcessor:
     def __init__(self, match_ticks: pd.DataFrame, match_events: pd.DataFrame, context_window_size):
@@ -375,6 +376,22 @@ class MatchDataProcessor:
                 val += 0.5
             data.append(val)
         return data
+    
+    # Not used, unsure how to normalize data
+    # def get_players_distance(self, start_tick, end_tick, player1, player2):
+    #     p1 = self.get_tick_values_multiple(start_tick, end_tick, player1, ["X", "Y", "Z"])
+    #     p2 = self.get_tick_values_multiple(start_tick, end_tick, player2, ["X", "Y", "Z"])
+
+    #     distances = []
+
+    #     for x1, y1, z1, x2, y2, z2 in zip(p1["X"], p1["Y"], p1["Z"], p2["X"], p2["Y"], p2["Z"]):
+    #         dx = x1 - x2
+    #         dy = y1 - y2
+    #         dz = z1 - z2
+    #         distance = math.sqrt(dx ** 2 + dy ** 2 + dz ** 2)
+    #         distances.append(distance)
+
+    #     return distances
     
     def get_played_map(self, played_map):
         zeros = np.zeros(1024)
