@@ -78,17 +78,6 @@ def df_to_readable_csv(df:pandas.core.frame.DataFrame, filename:str):
         for index, row in df_aligned.iterrows():
             f.write(','.join([str(row[col]).ljust(max_lengths[col]) for col in df.columns]) + '\n')
 
-def event_list_2_json(list:list, filename:str):
-    
-    event_data = {}
-
-    for (s, df) in list:
-        dict = df.to_dict(orient="records")
-        event_data.update({s:dict})
-
-    with open(filename, "w") as f:
-        json.dump(event_data, f, indent=4)
-
 def get_all_events():
     events = parser.list_game_events()
     list = parser.parse_events(events)
@@ -117,20 +106,18 @@ def sensitive_data_events(l:list):
 
     return altered_list
 
-def get_player_nameid_dict():
+def update_player_mapping():
     player_info = parser.parse_player_info()
 
     # creates a dict from the steamid and names to Player_x
     steamid_to_player = {steamid: f'Player_{i+1}' for i, steamid in enumerate(player_info['steamid'].unique())}
     name_to_player = {name: steamid_to_player[steamid] for steamid, name in zip(player_info['steamid'], player_info['name'])}
-    player_mapping = {**steamid_to_player, **name_to_player}
-    player_mapping = {str(key): value for key, value in player_mapping.items()}
+    pm = {**steamid_to_player, **name_to_player}
+    player_mapping.clear()
+    player_mapping.update({str(key): value for key, value in pm.items()})
 
-    return player_mapping
 
 def replace_sensitive_data_df(df:pandas.core.frame.DataFrame):
-    player_mapping = get_player_nameid_dict()
-
     df_anonymised = df.copy()
 
     for d in SENSITIVE_DATA_REPLACE:
