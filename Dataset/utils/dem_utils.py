@@ -1,15 +1,9 @@
 from demoparser2 import DemoParser #https://github.com/LaihoE/demoparser
 import pandas
-import json
-import time
 
 import pandas.core
 import pandas.core.frame
 from utils.demo_parser_fields import ALL_FIELDS
-
-START_BALANCE = 800
-MAX_HEALTH = 100.0
-NUM_PLAYERS = 10
 
 SENSITIVE_DATA_REMOVAL = ["crosshair_code",
                           "player_name",
@@ -115,6 +109,8 @@ def update_player_mapping():
     pm = {**steamid_to_player, **name_to_player}
     player_mapping.clear()
     player_mapping.update({str(key): value for key, value in pm.items()})
+
+    return player_mapping
 
 
 def replace_sensitive_data_df(df:pandas.core.frame.DataFrame):
