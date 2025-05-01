@@ -14,25 +14,25 @@ class MatchDataProcessor:
         return normalized
 
     def get_all_values_for_player(self, player, key):
-        return self.match_ticks[self.match_ticks["name"] == player][key].tolist()
+        return self.match_ticks[self.match_ticks["steamid"] == player][key].tolist()
 
     def get_tick_values_multiple(self, start_tick, end_tick, player, columns):
         filtered = self.match_ticks[
-            (self.match_ticks["name"] == player) &
+            (self.match_ticks["steamid"] == player) &
             (self.match_ticks["tick"] > start_tick) &
             (self.match_ticks["tick"] <= end_tick)
         ]
         return {col: filtered[col].tolist() for col in columns}
     
     def get_tick_values(self, start_tick, end_tick, player, key):
-        values = self.match_ticks[(self.match_ticks["name"] == player) & 
+        values = self.match_ticks[(self.match_ticks["steamid"] == player) & 
                                  (self.match_ticks["tick"] <= end_tick) & 
                                  (self.match_ticks["tick"] > start_tick)][key].tolist()
         return values
 
     def get_player_kills(self, player_name, player_death_idx):
         player_deaths = self.match_events[player_death_idx][1]
-        return player_deaths[player_deaths["attacker_name"] == player_name]
+        return player_deaths[player_deaths["attacker_steamid"] == player_name]
     
     def get_player_team(self, start_tick, end_tick, player):
         vals = self.get_tick_values(start_tick, end_tick, player, "team_name")
@@ -183,17 +183,17 @@ class MatchDataProcessor:
 
         while i < n:
             if values[i] > 0:
-                # Start of a non-zero streak
+                # start of a non-zero streak
                 start = i
                 current_val = values[i]
 
-                # Find how long the streak goes
+                # find how long the streak goes
                 while i < n and values[i] == current_val:
                     i += 1
                 end = i
                 decay_length = end - start
 
-                # Apply linear decay from 1 to 0 over decay_length
+                # apply linear decay from 1 to 0 over decay_length
                 for j in range(decay_length):
                     output[start + j] = 1 - (j / decay_length)
             else:
@@ -203,7 +203,7 @@ class MatchDataProcessor:
     
     def get_attacker_shots(self, start_tick, end_tick, player, weapon_fire_idx):
         shots = self.match_events[weapon_fire_idx][1]
-        player_shots = shots[(shots["user_name"] == player) & 
+        player_shots = shots[(shots["user_steamid"] == player) & 
                              (shots["tick"] >= start_tick) & 
                              (shots["tick"] < end_tick)]["tick"].tolist()
         data = np.zeros(self.context_window_size)

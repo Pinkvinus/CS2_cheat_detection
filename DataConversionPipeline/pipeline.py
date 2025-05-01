@@ -5,8 +5,12 @@ import context_window_helper as cwh
 import matplotlib.pyplot as plt
 import numpy as np
 
-filepath = r"C:\Users\Gert\Desktop\parsed_data\with_cheater_present"
 is_cheater_data = "cdata"
+filepath = r"C:\Users\Gert\Desktop\parsed_data\with_cheater_present"
+cheater_out_dir = r"C:\Users\Gert\Desktop\context_windows\cheater"
+non_cheater_out_dir = r"C:\Users\Gert\Desktop\context_windows\not_cheater"
+files_count = int(len(os.listdir(filepath)) / 2)
+print(files_count)
 
 def json_2_eventlist(filepath:str) -> list:
     with open(filepath, "r") as f:
@@ -32,8 +36,8 @@ context_window_vals = ["attacker_X", "attacker_Y", "attacker_Z", "attacker_vel",
                        "victim_X", "victim_Y", "victim_Z", "victim_health", "victim_noise", "map_dust2", "map_mirage", "map_inferno", "map_train",
                        "map_nuke", "map_ancient", "map_vertigo", "map_anubis", "map_office", "map_overpass", "map_basalt", "map_edin", "map_italy", "map_thera", "map_mills"]
 
-for file_idx in range(10):
-# for file_idx in range(317):
+# for file_idx in range(10):
+for file_idx in range(files_count):
     match_ticks = pd.read_parquet(path=f"{filepath}\{file_idx}.parquet")
     match_events = json_2_eventlist(filepath=f"{filepath}\{file_idx}.json")
 
@@ -51,17 +55,17 @@ for file_idx in range(10):
     if player_death_idx == -1 or weapon_fire_idx == -1:
         raise Exception("not all events were found")
 
-    all_players = match_ticks["name"].unique().tolist()
+    all_players = match_ticks["steamid"].unique().tolist()
     for p in all_players:
         context_window = pd.DataFrame(columns=context_window_vals)
         attacker = p
-        is_attacker_cheater = attacker in match_events[-2][1]["name"].tolist()
+        is_attacker_cheater = attacker in match_events[-2][1]["steamid"].tolist()
         player_deaths = MDP.get_player_kills(attacker, player_death_idx)
         start_ticks, end_ticks = MDP.get_context_window_ticks(ticks_before_kill, ticks_after_kill, attacker, player_death_idx)
 
         for i in range(len(start_ticks)):
             attacker_team = MDP.get_player_team(start_ticks[i], end_ticks[i], attacker)
-            victim = player_deaths.iloc[i]["user_name"]
+            victim = player_deaths.iloc[i]["user_steamid"]
             victim_team = MDP.get_player_team(start_ticks[i], end_ticks[i], victim)
 
             # Skip grenade kills
@@ -92,7 +96,7 @@ for file_idx in range(10):
             context_window["attacker_pitch_delta"] = MDP.get_pitch_yaw_deltas("pitch", start_ticks[i], end_ticks[i], attacker)
             context_window["attacker_yaw_delta"] = MDP.get_pitch_yaw_deltas("yaw", start_ticks[i], end_ticks[i], attacker)
 
-            context_window["attacker_pitch_head_delta"], context_window["attacker_yaw_head_delta"] = MDP.get_pitch_yaw_head_deltas(start_ticks[i], end_ticks[i], context_window_size, attacker, player_deaths.iloc[i]["user_name"])
+            context_window["attacker_pitch_head_delta"], context_window["attacker_yaw_head_delta"] = MDP.get_pitch_yaw_head_deltas(start_ticks[i], end_ticks[i], context_window_size, attacker, player_deaths.iloc[i]["user_steamid"])
 
             context_window["attacker_flashed"] = MDP.get_is_player_flashed(start_ticks[i], end_ticks[i], attacker)
             context_window["attacker_shot"] = MDP.get_attacker_shots(start_ticks[i], end_ticks[i], attacker, weapon_fire_idx)
@@ -134,9 +138,6 @@ for file_idx in range(10):
 
             # Filename structure: c(cheater dataset)/n(not cheater dataset)_c(player cheater)/n(player not cheater)_fileidx_playername_killnr.parquet
             c_n = "cheater" if is_attacker_cheater else "notcheater"
-
-            cheater_out_dir = r"C:\Users\Gert\Desktop\context_windows\cheater"
-            non_cheater_out_dir = r"C:\Users\Gert\Desktop\context_windows\not_cheater"
 
             out_dir = cheater_out_dir if c_n == "cheater" else non_cheater_out_dir
             context_window.to_parquet(fr"{out_dir}\{is_cheater_data}-{c_n}-file_{file_idx}-{attacker}-kill_{i}.parquet", index=False)
