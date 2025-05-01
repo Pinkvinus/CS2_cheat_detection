@@ -31,13 +31,13 @@ ticks_after_kill = 128
 context_window_size = ticks_before_kill + ticks_after_kill
 
 context_window_vals = ["attacker_X", "attacker_Y", "attacker_Z", "attacker_vel", "attacker_pitch", "attacker_yaw", "attacker_pitch_delta", 
-                       "attacker_yaw_delta", "attacker_pitch_head_delta", "attacker_yaw_head_delta", "attacker_flashed", "attacker_shot", "attacker_kill", "is_kill_through_smoke", 
+                       "attacker_yaw_delta", "attacker_pitch_head_delta", "attacker_yaw_head_delta", "attacker_flashed", "attacker_shot", "attacker_kill", "is_kill_headshot", "is_kill_through_smoke", 
                        "is_kill_wallbang", "attacker_midair", "attacker_weapon_knife", "attacker_weapon_auto_rifle", "attacker_weapon_semi_rifle", "attacker_weapon_pistol",
                        "attacker_weapon_grenade", "attacker_weapon_smg", "attacker_weapon_shotgun",
                        "victim_X", "victim_Y", "victim_Z", "victim_health", "victim_noise", "map_dust2", "map_mirage", "map_inferno", "map_train",
                        "map_nuke", "map_ancient", "map_vertigo", "map_anubis", "map_office", "map_overpass", "map_basalt", "map_edin", "map_italy", "map_thera", "map_mills"]
 
-# for file_idx in range(10):
+
 for file_idx in range(start_file_idx, files_count):
     match_ticks = pd.read_parquet(path=f"{filepath}\{file_idx}.parquet")
     match_events = json_2_eventlist(filepath=f"{filepath}\{file_idx}.json")
@@ -101,7 +101,8 @@ for file_idx in range(start_file_idx, files_count):
 
             context_window["attacker_flashed"] = MDP.get_is_player_flashed(start_ticks[i], end_ticks[i], attacker)
             context_window["attacker_shot"] = MDP.get_attacker_shots(start_ticks[i], end_ticks[i], attacker, weapon_fire_idx)
-            (context_window["attacker_kill"], 
+            (context_window["attacker_kill"],
+             context_window["is_kill_headshot"],
              context_window["is_kill_through_smoke"], 
              context_window["is_kill_wallbang"], 
              context_window["attacker_midair"]) = MDP.get_attacker_kill_data(start_ticks[i], end_ticks[i], attacker, player_death_idx)
@@ -143,5 +144,6 @@ for file_idx in range(start_file_idx, files_count):
             out_dir = cheater_out_dir if c_n == "cheater" else non_cheater_out_dir
             context_window = context_window.astype(np.float32)
             context_window.to_parquet(fr"{out_dir}\{is_cheater_data}-{c_n}-file_{file_idx}-{attacker}-kill_{i}.parquet", index=False)
+            context_window.to_csv(fr"C:\Users\Gert\repos\CS2_cheat_detection\DataConversionPipeline\test_data\killtest.csv", index=True)
 
     print(f"file idx {file_idx} done")
