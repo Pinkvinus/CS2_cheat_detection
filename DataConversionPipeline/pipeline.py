@@ -144,6 +144,5 @@ for file_idx in range(start_file_idx, files_count):
             out_dir = cheater_out_dir if c_n == "cheater" else non_cheater_out_dir
             context_window = context_window.astype(np.float32)
             context_window.to_parquet(fr"{out_dir}\{is_cheater_data}-{c_n}-file_{file_idx}-{attacker}-kill_{i}.parquet", index=False)
-            context_window.to_csv(fr"C:\Users\Gert\repos\CS2_cheat_detection\DataConversionPipeline\test_data\killtest.csv", index=True)
 
     print(f"file idx {file_idx} done")
