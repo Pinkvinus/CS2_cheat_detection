@@ -44,9 +44,11 @@ class MatchDataProcessor:
         player_deaths = self.get_player_kills(player, player_death_idx)
         start_ticks = []
         end_ticks = []
+        all_ticks = self.get_all_values_for_player(player, "tick")
         for tick in player_deaths["tick"]:
-            start_ticks.append(tick - ticks_before_kill)
-            end_ticks.append(tick + tick_after_kill)
+            idx = all_ticks.index(tick)
+            start_ticks.append(all_ticks[idx] - ticks_before_kill)
+            end_ticks.append(all_ticks[idx] + tick_after_kill)
         return (start_ticks, end_ticks)
 
     # (X_min, X_max, Y_min, Y_max, Z_min, Z_max)

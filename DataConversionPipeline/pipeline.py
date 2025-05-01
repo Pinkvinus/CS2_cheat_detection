@@ -81,9 +81,8 @@ for file_idx in range(start_file_idx, files_count):
             # Check length of the context window and no ticks missing
             ticks = MDP.get_tick_values(start_ticks[i], end_ticks[i], attacker, "tick")
             if len(ticks) != context_window_size:
-                gap = context_window_size - len(ticks)
+                print(f"Start and end tick defining problem in file {file_idx}")
                 all_ticks = MDP.get_all_values_for_player(attacker, "tick")
-
                 idx = all_ticks.index(start_ticks[i])
                 end_ticks[i] = all_ticks[idx + 1024]
 
