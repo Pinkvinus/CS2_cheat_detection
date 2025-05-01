@@ -206,35 +206,36 @@ class MatchDataProcessor:
         player_shots = shots[(shots["user_steamid"] == player) & 
                              (shots["tick"] >= start_tick) & 
                              (shots["tick"] < end_tick)]["tick"].tolist()
+        all_ticks = self.get_tick_values(start_tick, end_tick, player, "tick")
         data = np.zeros(self.context_window_size)
-        for i, val in enumerate(player_shots):
-            player_shots[i] = val - start_tick
-        for i in player_shots:
-            data[i] = 1
+        
+        for idx, tick in enumerate(all_ticks):
+            if tick in player_shots:
+                data[idx] = 1
         return data
     
     def get_attacker_kill_data(self, start_tick, end_tick, player, player_death_idx):
+        all_ticks = self.get_tick_values(start_tick, end_tick, player, "tick")
         kills = self.get_player_kills(player, player_death_idx)
-        kills = kills[(kills["tick"] >= start_tick) & (kills["tick"] < end_tick)][["tick", "thrusmoke", "penetrated", "attackerinair"]]
-        kills_thrusmoke = kills["thrusmoke"].tolist()
+        kills = kills[(kills["tick"] >= start_tick) & (kills["tick"] < end_tick)][["tick", "thrusmoke", "penetrated", "attackerinair", "headshot"]]
         kills_tick = kills["tick"].tolist()
-        kills_wallbang = kills["penetrated"].tolist()
-        kills_inair = kills["attackerinair"].tolist()
         data_kill = np.zeros(self.context_window_size)
+        data_headshot = np.zeros(self.context_window_size)
         data_thrusmoke = np.zeros(self.context_window_size)
         data_wallbang = np.zeros(self.context_window_size)
         data_inair = np.zeros(self.context_window_size)
-        for i, val in enumerate(kills_tick):
-            kills_tick[i] = val - start_tick
-        for i, val in enumerate(kills_tick):
-            data_kill[val] = 1
-            if kills_thrusmoke[i]:
-                data_thrusmoke[val] = 1
-            if kills_wallbang[i] > 0:
-                data_wallbang[val] = 1
-            if kills_inair[i]:
-                data_inair[val] = 1
-        return data_kill, data_thrusmoke, data_wallbang, data_inair
+        for i, tick in enumerate(all_ticks):
+            if tick in kills_tick:
+                data_kill[i] = 1
+                if kills[kills["tick"] == tick]["headshot"].tolist()[0]:
+                    data_headshot[i] = 1
+                if kills[kills["tick"] == tick]["thrusmoke"].tolist()[0]:
+                    data_thrusmoke[i] = 1
+                if kills[kills["tick"] == tick]["penetrated"].tolist()[0] > 0:
+                    data_wallbang[i] = 1
+                if kills[kills["tick"] == tick]["attackerinair"].tolist()[0]:
+                    data_inair[i] = 1
+        return data_kill, data_headshot, data_thrusmoke, data_wallbang, data_inair
         
     weapon_knife = {"Zeus x27", "knife_t", "knife", "Bayonet", "Bowie Knife", "Butterfly Knife", "Classic Knife", "Falchion Knife", "Flip Knife", "Gut Knife", "Huntsman Knife", "Karambit", "Kukri Knife", "M9 Bayonet", "Navaja Knife", "Nomad Knife", "Paracord Knife", "Shadow Daggers", "Skeleton Knife", "Stiletto Knife", "Survival Knife", "Talon Knife", "Ursus Knife"}
     

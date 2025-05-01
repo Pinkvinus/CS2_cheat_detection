@@ -10,6 +10,7 @@ filepath = r"C:\Users\Gert\Desktop\parsed_data\with_cheater_present"
 cheater_out_dir = r"C:\Users\Gert\Desktop\context_windows\cheater"
 non_cheater_out_dir = r"C:\Users\Gert\Desktop\context_windows\not_cheater"
 files_count = int(len(os.listdir(filepath)) / 2)
+start_file_idx = 46
 print(files_count)
 
 def json_2_eventlist(filepath:str) -> list:
@@ -37,7 +38,7 @@ context_window_vals = ["attacker_X", "attacker_Y", "attacker_Z", "attacker_vel",
                        "map_nuke", "map_ancient", "map_vertigo", "map_anubis", "map_office", "map_overpass", "map_basalt", "map_edin", "map_italy", "map_thera", "map_mills"]
 
 # for file_idx in range(10):
-for file_idx in range(files_count):
+for file_idx in range(start_file_idx, files_count):
     match_ticks = pd.read_parquet(path=f"{filepath}\{file_idx}.parquet")
     match_events = json_2_eventlist(filepath=f"{filepath}\{file_idx}.json")
 
@@ -140,6 +141,7 @@ for file_idx in range(files_count):
             c_n = "cheater" if is_attacker_cheater else "notcheater"
 
             out_dir = cheater_out_dir if c_n == "cheater" else non_cheater_out_dir
+            context_window = context_window.astype(np.float32)
             context_window.to_parquet(fr"{out_dir}\{is_cheater_data}-{c_n}-file_{file_idx}-{attacker}-kill_{i}.parquet", index=False)
 
     print(f"file idx {file_idx} done")
