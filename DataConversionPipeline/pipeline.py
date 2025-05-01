@@ -10,7 +10,7 @@ filepath = r"C:\Users\Gert\Desktop\parsed_data\with_cheater_present"
 cheater_out_dir = r"C:\Users\Gert\Desktop\context_windows\cheater"
 non_cheater_out_dir = r"C:\Users\Gert\Desktop\context_windows\not_cheater"
 files_count = int(len(os.listdir(filepath)) / 2)
-start_file_idx = 46
+start_file_idx = 0
 print(files_count)
 
 def json_2_eventlist(filepath:str) -> list:
