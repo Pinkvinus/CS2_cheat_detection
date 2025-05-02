@@ -137,6 +137,7 @@ Data added from scraping process:
 
 - The dataset is formated in UTF-8 encoding.
 - Researchers should **cite this dataset appropriately** in publications
+- In the case that all players from a single team quits the match, a single bot is spawned to fill the empty team. This may result in kills where no steamid is present. This is due to the bot not having a steamid.
 
 ## Applications
 
