@@ -42,13 +42,35 @@ class MatchDataProcessor:
 
     def get_context_window_ticks(self, ticks_before_kill, tick_after_kill, player, player_death_idx):
         player_deaths = self.get_player_kills(player, player_death_idx)
+        total_window = ticks_before_kill + tick_after_kill
         start_ticks = []
         end_ticks = []
         all_ticks = self.get_all_values_for_player(player, "tick")
         for tick in player_deaths["tick"]:
             idx = all_ticks.index(tick)
-            start_ticks.append(all_ticks[idx - ticks_before_kill])
-            end_ticks.append(all_ticks[idx + tick_after_kill])
+
+            start_idx = idx - ticks_before_kill
+            end_idx = idx + tick_after_kill
+
+            if start_idx < 0:
+                shift = -start_idx
+                start_idx = 0
+                end_idx = min(len(all_ticks) - 1, end_idx + shift)
+
+            if end_idx >= len(all_ticks):
+                shift = end_idx - (len(all_ticks) - 1)
+                end_idx = len(all_ticks) - 1
+                start_idx = max(0, start_idx - shift)
+
+            if end_idx - start_idx == total_window:
+                start_ticks.append(all_ticks[start_idx])
+                end_ticks.append(all_ticks[end_idx])
+            else:
+                print(len(all_ticks))
+                print(start_idx)
+                print(end_idx)
+                raise Exception("Context window ticks selection problem")
+
         return (start_ticks, end_ticks)
 
     # (X_min, X_max, Y_min, Y_max, Z_min, Z_max)
