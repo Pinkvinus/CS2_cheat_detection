@@ -13,7 +13,7 @@ The dataset is partitioned into data with at least one cheater present, and data
   <p>Only files, containing at least one VAC(Valve Anti-cheat)-banned player, have been manually labelled and verified. Hence, <strong>cheaters may be present in the data without cheaters</strong>.</p>
   <p>When examining a subset containing 50 data points (demos) with no VAC-banned players, it was discovered that in 97.2% of players in these matches were not presenting any cheater-like behaviour.</p>
   <p>When examining a subset of 50 data points (demos) in the set of matches with with at least one VAC-banned players, it was discovered that the label precission of the "not cheater" label was 55.6%. This is possibly due to CS2 using <a href="https://help.steampowered.com/en/faqs/view/00EF-D679-C76A-C185" target="_blank" style="color: #007bff; text-decoration: underline;">trust factor match making</a>.</p>
-  
+
   <p>Hence, it was decided, that resources were best spent with labeling data containing at least one VAC-banned player.</p>
 
   <p>For more information regarding the data collection see <a href="https://help.steampowered.com/en/faqs/view/00EF-D679-C76A-C185" target="_blank" style="color: #007bff; text-decoration: underline;">Counter-Strike 2 Game data collection with cheat labelling</a> by Mille Mei Zhen Loo & Gert Lužkov.</p>
@@ -109,20 +109,20 @@ The following is the complete list of **data removed** from the dataset:
 - `networkid`
 - `PlayerID`
 - `address`
+- `name`
+- `user_name`
+- `victim_name`
+- `attacker_name`
+- `assister_name`
+- `chat_message`
 
 The following data is the complete list of **altered data** in the dataset:
 
-- `name`
-- `user_name`
-- `names`
 - `steamid`
 - `user_steamid`
-- `attacker_name`
 - `attacker_steamid`
-- `victim_name`
 - `victim_steamid`
 - `active_weapon_original_owner`
-- `assister_name`
 - `assister_steamid`
 - `approximate_spotted_by`
 
