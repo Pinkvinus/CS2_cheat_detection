@@ -67,6 +67,11 @@ for file_idx in range(start_file_idx, files_count):
         for i in range(len(start_ticks)):
             attacker_team = MDP.get_player_team(start_ticks[i], end_ticks[i], attacker)
             victim = player_deaths.iloc[i]["user_steamid"]
+
+            # Skip kills on bot
+            if victim == "":
+                continue
+
             victim_team = MDP.get_player_team(start_ticks[i], end_ticks[i], victim)
 
             # Skip grenade kills
