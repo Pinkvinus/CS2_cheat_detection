@@ -5,8 +5,8 @@ import context_window_helper as cwh
 import matplotlib.pyplot as plt
 import numpy as np
 
-is_cheater_data = "cdata"
-filepath = r"C:\Users\Gert\Desktop\parsed_data\with_cheater_present"
+is_cheater_data = "ncdata"
+filepath = r"C:\Users\Gert\Desktop\parsed_data\no_cheater_present"
 cheater_out_dir = r"C:\Users\Gert\Desktop\context_windows\cheater"
 non_cheater_out_dir = r"C:\Users\Gert\Desktop\context_windows\not_cheater"
 files_count = int(len(os.listdir(filepath)) / 2)
@@ -54,13 +54,15 @@ for file_idx in range(start_file_idx, files_count):
         if event[0] == "weapon_fire":
             weapon_fire_idx = idx
     if player_death_idx == -1 or weapon_fire_idx == -1:
-        raise Exception("not all events were found")
+        print(f"Not all events were found. Weapon fire idx: {weapon_fire_idx}. Player Death idx: {player_death_idx}. Skipping demo idx {file_idx}")
+        continue
 
     all_players = match_ticks["steamid"].unique().tolist()
     for p in all_players:
         context_window = pd.DataFrame(columns=context_window_vals)
         attacker = p
         is_attacker_cheater = attacker in match_events[-2][1]["steamid"].tolist()
+        # is_attacker_cheater = False
         player_deaths = MDP.get_player_kills(attacker, player_death_idx)
         start_ticks, end_ticks = MDP.get_context_window_ticks(ticks_before_kill, ticks_after_kill, attacker, player_death_idx)
 
