@@ -10,6 +10,10 @@ pkgs.mkShell {
     python3Packages.polars    # Demoparser2 dependency
     python3Packages.pyarrow   # Demoparser2 dependency
     python3Packages.tqdm      # Demoparser2 dependency
+    python3Packages.huggingface-hub
+    python3Packages.ipykernel
+    python3Packages.jupyter
+    python3Packages.jupyterlab
   ];
 
   shellHook = ''
@@ -26,5 +30,7 @@ pkgs.mkShell {
     else
       source .venv/bin/activate
     fi
+
+    huggingface-cli lfs-enable-largefiles .
   '';
 }
