@@ -9,7 +9,7 @@ from pathlib import Path
 import gc
 
 INPUT_PATH = Path("./Demo_data/Demos")
-OUTPUT_PATH = "./Data"
+OUTPUT_PATH = "../CS2CD.Counter-Strike_2_Cheat_Detection"
 CHEATER_PATH = OUTPUT_PATH + "/with_cheater_present"
 NO_CHEATER_PATH = OUTPUT_PATH + "/no_cheater_present"
 
