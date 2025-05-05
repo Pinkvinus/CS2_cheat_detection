@@ -5,11 +5,12 @@ import context_window_helper as cwh
 import matplotlib.pyplot as plt
 import numpy as np
 
-is_cheater_data = "cdata"
-filepath = r"C:\Users\Gert\Desktop\parsed_data\with_cheater_present"
+is_cheater_data = "ncdata"
+filepath = r"C:\Users\Gert\Desktop\parsed_data\no_cheater_present"
 cheater_out_dir = r"C:\Users\Gert\Desktop\context_windows\cheater"
 non_cheater_out_dir = r"C:\Users\Gert\Desktop\context_windows\not_cheater"
 files_count = int(len(os.listdir(filepath)) / 2)
+start_file_idx = 0
 print(files_count)
 
 def json_2_eventlist(filepath:str) -> list:
@@ -30,14 +31,14 @@ ticks_after_kill = 128
 context_window_size = ticks_before_kill + ticks_after_kill
 
 context_window_vals = ["attacker_X", "attacker_Y", "attacker_Z", "attacker_vel", "attacker_pitch", "attacker_yaw", "attacker_pitch_delta", 
-                       "attacker_yaw_delta", "attacker_pitch_head_delta", "attacker_yaw_head_delta", "attacker_flashed", "attacker_shot", "attacker_kill", "is_kill_through_smoke", 
+                       "attacker_yaw_delta", "attacker_pitch_head_delta", "attacker_yaw_head_delta", "attacker_flashed", "attacker_shot", "attacker_kill", "is_kill_headshot", "is_kill_through_smoke", 
                        "is_kill_wallbang", "attacker_midair", "attacker_weapon_knife", "attacker_weapon_auto_rifle", "attacker_weapon_semi_rifle", "attacker_weapon_pistol",
                        "attacker_weapon_grenade", "attacker_weapon_smg", "attacker_weapon_shotgun",
                        "victim_X", "victim_Y", "victim_Z", "victim_health", "victim_noise", "map_dust2", "map_mirage", "map_inferno", "map_train",
                        "map_nuke", "map_ancient", "map_vertigo", "map_anubis", "map_office", "map_overpass", "map_basalt", "map_edin", "map_italy", "map_thera", "map_mills"]
 
-# for file_idx in range(10):
-for file_idx in range(files_count):
+
+for file_idx in range(start_file_idx, files_count):
     match_ticks = pd.read_parquet(path=f"{filepath}\{file_idx}.parquet")
     match_events = json_2_eventlist(filepath=f"{filepath}\{file_idx}.json")
 
@@ -53,19 +54,26 @@ for file_idx in range(files_count):
         if event[0] == "weapon_fire":
             weapon_fire_idx = idx
     if player_death_idx == -1 or weapon_fire_idx == -1:
-        raise Exception("not all events were found")
+        print(f"Not all events were found. Weapon fire idx: {weapon_fire_idx}. Player Death idx: {player_death_idx}. Skipping demo idx {file_idx}")
+        continue
 
     all_players = match_ticks["steamid"].unique().tolist()
     for p in all_players:
         context_window = pd.DataFrame(columns=context_window_vals)
         attacker = p
         is_attacker_cheater = attacker in match_events[-2][1]["steamid"].tolist()
+        # is_attacker_cheater = False
         player_deaths = MDP.get_player_kills(attacker, player_death_idx)
         start_ticks, end_ticks = MDP.get_context_window_ticks(ticks_before_kill, ticks_after_kill, attacker, player_death_idx)
 
         for i in range(len(start_ticks)):
             attacker_team = MDP.get_player_team(start_ticks[i], end_ticks[i], attacker)
             victim = player_deaths.iloc[i]["user_steamid"]
+
+            # Skip kills on bot
+            if victim == "":
+                continue
+
             victim_team = MDP.get_player_team(start_ticks[i], end_ticks[i], victim)
 
             # Skip grenade kills
@@ -80,9 +88,8 @@ for file_idx in range(files_count):
             # Check length of the context window and no ticks missing
             ticks = MDP.get_tick_values(start_ticks[i], end_ticks[i], attacker, "tick")
             if len(ticks) != context_window_size:
-                gap = context_window_size - len(ticks)
+                print(f"Start and end tick defining problem in file {file_idx}")
                 all_ticks = MDP.get_all_values_for_player(attacker, "tick")
-
                 idx = all_ticks.index(start_ticks[i])
                 end_ticks[i] = all_ticks[idx + 1024]
 
@@ -100,7 +107,8 @@ for file_idx in range(files_count):
 
             context_window["attacker_flashed"] = MDP.get_is_player_flashed(start_ticks[i], end_ticks[i], attacker)
             context_window["attacker_shot"] = MDP.get_attacker_shots(start_ticks[i], end_ticks[i], attacker, weapon_fire_idx)
-            (context_window["attacker_kill"], 
+            (context_window["attacker_kill"],
+             context_window["is_kill_headshot"],
              context_window["is_kill_through_smoke"], 
              context_window["is_kill_wallbang"], 
              context_window["attacker_midair"]) = MDP.get_attacker_kill_data(start_ticks[i], end_ticks[i], attacker, player_death_idx)
@@ -140,6 +148,7 @@ for file_idx in range(files_count):
             c_n = "cheater" if is_attacker_cheater else "notcheater"
 
             out_dir = cheater_out_dir if c_n == "cheater" else non_cheater_out_dir
+            context_window = context_window.astype(np.float32)
             context_window.to_parquet(fr"{out_dir}\{is_cheater_data}-{c_n}-file_{file_idx}-{attacker}-kill_{i}.parquet", index=False)
 
     print(f"file idx {file_idx} done")
