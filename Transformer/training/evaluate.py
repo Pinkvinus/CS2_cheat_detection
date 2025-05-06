@@ -12,7 +12,7 @@ def evaluate(model, dataloader, device):
             labels = labels.to(device)
 
             outputs = model(inputs).squeeze(1)
-            preds = torch.sigmoid(outputs) > 0.5
+            preds = outputs > 0.5 # Check that this function works
 
             all_preds.extend(preds.cpu().numpy())
             all_labels.extend(labels.cpu().numpy())

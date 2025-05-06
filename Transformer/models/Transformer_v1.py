@@ -16,12 +16,12 @@ class Transformer_V1(nn.Module):
     ):
         super(Transformer_V1, self).__init__()
 
-        self.input_proj = nn.Linear(feature_dim, d_model)  # project input to model dimension, basically creating an "embedding" (similar to LLMs)
+        # self.input_proj = nn.Linear(feature_dim, d_model)  # project input to model dimension, basically creating an "embedding" (similar to LLMs)
 
         self.positional_encoding = PositionalEncoding(d_model=d_model, max_len=seq_len + 1)  # +1 for CLS token
 
         encoder_layer = nn.TransformerEncoderLayer(
-            d_model=d_model,
+            d_model=44,
             nhead=nhead,
             dim_feedforward=dim_feedforward,
             dropout=dropout,
