@@ -5,7 +5,7 @@ from data.dataset import DataImporter
 from training.evaluate import evaluate
 from training.scheduler import get_scheduler
 from utils.utils import save_checkpoint
-from torchsummary import summary
+from torchinfo import summary
 from training.hyperparameters import seq_len, batch_size, num_epochs, learning_rate, train_size, val_size, test_size, feature_dim
 import os
 
@@ -29,7 +29,7 @@ def train_model(model):
     scheduler = get_scheduler(optimizer, step_size=10, gamma=0.5)
     criterion = nn.BCEWithLogitsLoss()
 
-    summary(model=model, input_size=(seq_len, feature_dim), batch_size=batch_size, device=device.type)
+    summary(model=model, input_size=(batch_size, seq_len, feature_dim), device=device.type)
 
     train_losses = []
     val_losses = []

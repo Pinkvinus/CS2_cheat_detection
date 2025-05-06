@@ -52,7 +52,7 @@ import math
 class PositionalEncoding(nn.Module):
     def __init__(self, d_model, max_len):
         super().__init__()
-        self.register_buffer("pe", self._generate_pe(max_len, d_model))  # store properly
+        self.register_buffer("pe", self._generate_pe(max_len, d_model))
 
     def _generate_pe(self, max_len, d_model):
         pe = torch.zeros(max_len, d_model)
