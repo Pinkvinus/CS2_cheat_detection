@@ -5,10 +5,12 @@ import pandas as pd
 from pathlib import Path
 import glob
 
-class ImportDataset(Dataset):
-    def __init__(self, data_dir, transform=None):
+class DataImporter(Dataset):
+    def __init__(self, transform=None):
         self.samples = []
         self.transform = transform
+
+        data_dir = Path(__file__).resolve().parent
 
         cheater_dir = Path(data_dir) / "cheater"
         not_cheater_dir = Path(data_dir) / "not_cheater"
@@ -28,7 +30,6 @@ class ImportDataset(Dataset):
         file_path, label = self.samples[idx]
         df = pd.read_parquet(file_path)
 
-        # DataFrame to tensor
         data = torch.tensor(df.values, dtype=torch.float32)
         label = torch.tensor(label, dtype=torch.float32)
 

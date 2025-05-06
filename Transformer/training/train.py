@@ -1,18 +1,20 @@
 import torch
 from torch import nn
 from torch.utils.data import DataLoader, random_split
-from Transformer.utils.dataset import DataImporter
-from Transformer.training.evaluate import evaluate
-from Transformer.training.scheduler import get_scheduler
-# from models.SOMEMODEL import TransformerModel
-from Transformer.utils.utils import save_checkpoint
+from data.dataset import DataImporter
+from training.evaluate import evaluate
+from training.scheduler import get_scheduler
+from utils.utils import save_checkpoint
+from torchsummary import summary
+from training.hyperparameters import seq_len, batch_size, num_epochs, learning_rate, train_size, val_size, test_size, feature_dim
 import os
 
 
-def train_model(batch_size=16, learning_rate=1e-4, num_epochs=10, train_size=0.7, val_size=0.15, test_size=0.15):
+def train_model(model):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    checkpoint_dir = os.path.join("checkpoint")
 
-    dataset = DataImporter(data_dir="data")
+    dataset = DataImporter()
     train_dataset, val_dataset, test_dataset = random_split(
         dataset, [train_size, val_size, test_size],
         generator=torch.Generator().manual_seed(42)
@@ -22,10 +24,12 @@ def train_model(batch_size=16, learning_rate=1e-4, num_epochs=10, train_size=0.7
     val_loader = DataLoader(val_dataset, batch_size=batch_size)
     test_loader = DataLoader(test_dataset, batch_size=batch_size)
 
-    model = TransformerModel().to(device)
+    model = model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-    scheduler = get_scheduler(optimizer)
+    scheduler = get_scheduler(optimizer, step_size=10, gamma=0.5)
     criterion = nn.BCEWithLogitsLoss()
+
+    summary(model=model, input_size=(seq_len, feature_dim), batch_size=batch_size, device=device.type)
 
     train_losses = []
     val_losses = []
@@ -51,7 +55,7 @@ def train_model(batch_size=16, learning_rate=1e-4, num_epochs=10, train_size=0.7
         print(f"Epoch {epoch+1} | Loss: {avg_train_loss:.4f} | Val Acc: {val_acc:.4f}")
 
         if (epoch+1) % 10 == 0:
-            save_checkpoint(model, optimizer, epoch, f"C:/Users/Gert/repos/AML-exam-project/project/models/autoencoder_Ver11_{epoch+1}_epochs_checkpoint.pth", train_losses, val_losses)
+            save_checkpoint(model, optimizer, epoch, checkpoint_dir, train_losses, val_losses)
 
 if __name__ == "__main__":
     train_model()
