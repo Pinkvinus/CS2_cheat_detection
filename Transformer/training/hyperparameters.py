@@ -12,3 +12,4 @@ number_heads=4
 num_layers=6
 dim_feedforward=512
 dropout=0.1
+checkpoint_freq = 5

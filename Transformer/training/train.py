@@ -6,7 +6,7 @@ from training.evaluate import evaluate
 from training.scheduler import get_scheduler
 from utils.utils import save_checkpoint
 from torchinfo import summary
-from training.hyperparameters import seq_len, batch_size, num_epochs, learning_rate, train_size, val_size, test_size, feature_dim
+from training.hyperparameters import seq_len, batch_size, num_epochs, learning_rate, train_size, val_size, test_size, feature_dim, checkpoint_freq
 import os
 
 
@@ -33,6 +33,7 @@ def train_model(model):
 
     train_losses = []
     val_losses = []
+    val_accs = []
 
     for epoch in range(num_epochs):
         model.train()
@@ -49,13 +50,14 @@ def train_model(model):
         scheduler.step()
 
         avg_train_loss = epoch_train_loss / len(train_loader)
-        val_acc = evaluate(model, val_loader, device)
+        val_acc, val_loss = evaluate(model, val_loader, device, criterion)
         train_losses.append(avg_train_loss)
-        val_losses.append(val_acc)
-        print(f"Epoch {epoch+1} | Loss: {avg_train_loss:.4f} | Val Acc: {val_acc:.4f}")
+        val_losses.append(val_loss)
+        val_accs.append(val_acc)
+        print(f"Epoch {epoch+1} | Train Loss: {avg_train_loss:.4f} | Val Loss: {val_loss:.4f} | Val Acc: {val_acc:.4f}")
 
-        if (epoch+1) % 10 == 0:
-            save_checkpoint(model, optimizer, epoch, checkpoint_dir, train_losses, val_losses)
+        if (epoch+1) % checkpoint_freq == 0:
+            save_checkpoint(model, optimizer, epoch, checkpoint_dir, train_losses, val_losses, val_accs)
 
-if __name__ == "__main__":
-    train_model()
+# if __name__ == "__main__":
+#     train_model()

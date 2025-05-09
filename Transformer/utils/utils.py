@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 
-def save_checkpoint(model, optimizer, epoch, file_path, train_losses, val_losses):
+def save_checkpoint(model, optimizer, epoch, file_path, train_losses, val_losses, val_accs):
     """
     Save the training state to a checkpoint file.
 
@@ -16,7 +16,8 @@ def save_checkpoint(model, optimizer, epoch, file_path, train_losses, val_losses
         'optimizer_state_dict': optimizer.state_dict(),
         'epoch': epoch,
         'train_losses': train_losses,
-        'val_losses': val_losses
+        'val_losses': val_losses,
+        'val_accs': val_accs
     }
     torch.save(checkpoint, file_path)
     print(f"Checkpoint saved at {file_path}")
