@@ -45,7 +45,7 @@ class Transformer_V1(nn.Module):
         # x = self.input_proj(x)  # (batch_size, 1024, d_model) NOT IN USE
 
         # add classification token
-        cls_tokens = self.cls_token.expand(B, -1, -1)  # (batch_size, 1, d_model)
+        cls_tokens = self.cls_token.expand(B, -1, -1).to(x.device)  # (batch_size, 1, d_model)
         x = torch.cat((cls_tokens, x), dim=1)  # -> (batch_size, 1025, d_model)
 
         x = self.positional_encoding(x) # add positional encoding

@@ -13,7 +13,7 @@ def evaluate(model, dataloader, device, criterion=None):
             inputs = inputs.to(device)
             labels = labels.to(device)
 
-            outputs = model(inputs).squeeze(1)
+            outputs = model(inputs)
 
             if criterion is not None:
                 loss = criterion(outputs, labels)
