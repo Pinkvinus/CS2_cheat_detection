@@ -12,6 +12,8 @@ import os
 
 def train_model(model):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if device.type != "cuda":
+        raise Exception("CUDA Could not be activated!")
     checkpoint_dir = os.path.join("checkpoint")
 
     dataset = DataImporter()
