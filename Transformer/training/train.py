@@ -15,6 +15,10 @@ def train_model(model, project_root):
     if device.type != "cuda":
         raise Exception("CUDA Could not be activated!")
     checkpoint_dir = os.path.join(project_root, "checkpoints")
+    
+    seed = 42
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
 
     dataset = DataImporter()
     train_dataset, val_dataset, test_dataset = random_split(
@@ -64,8 +68,5 @@ def train_model(model, project_root):
         rocs.append(roc)
         print(f"Epoch {epoch+1} | Train Loss: {avg_train_loss:.4f} | Val Loss: {val_loss:.4f} | Val Acc: {val_acc:.4f}")
 
-        if (epoch+1) % checkpoint_freq == 0:
-            save_checkpoint(model, optimizer, epoch, checkpoint_dir, train_losses, val_losses, val_accs, recalls, precisions, rocs)
-
-# if __name__ == "__main__":
-#     train_model()
+        #if (epoch+1) % checkpoint_freq == 0:
+        save_checkpoint(model, optimizer, epoch, checkpoint_dir, train_losses, val_losses, val_accs, recalls, precisions, rocs)
