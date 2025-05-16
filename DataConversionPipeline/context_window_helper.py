@@ -419,8 +419,8 @@ class MatchDataProcessor:
     #     return distances
     
     def get_played_map(self, played_map):
-        zeros = np.zeros(1024)
-        ones = np.ones(1024)
+        zeros = np.zeros(self.context_window_size)
+        ones = np.ones(self.context_window_size)
     
         maps = [
             "de_dust2", "de_mirage", "de_inferno", "de_train", "de_nuke",

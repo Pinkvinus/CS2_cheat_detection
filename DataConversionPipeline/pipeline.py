@@ -7,10 +7,10 @@ import numpy as np
 
 is_cheater_data = "ncdata"
 filepath = r"C:\Users\Gert\Desktop\parsed_data\no_cheater_present"
-cheater_out_dir = r"C:\Users\Gert\Desktop\context_windows\cheater"
-non_cheater_out_dir = r"C:\Users\Gert\Desktop\context_windows\not_cheater"
+cheater_out_dir = r"C:\Users\Gert\Desktop\context_windows_512\cheater"
+non_cheater_out_dir = r"C:\Users\Gert\Desktop\context_windows_512\not_cheater"
 files_count = int(len(os.listdir(filepath)) / 2)
-start_file_idx = 0
+start_file_idx = 0 #37
 print(files_count)
 
 def json_2_eventlist(filepath:str) -> list:
@@ -26,8 +26,8 @@ def json_2_eventlist(filepath:str) -> list:
 
     return data
 
-ticks_before_kill = 896
-ticks_after_kill = 128
+ticks_before_kill = 448
+ticks_after_kill = 64
 context_window_size = ticks_before_kill + ticks_after_kill
 
 context_window_vals = ["attacker_X", "attacker_Y", "attacker_Z", "attacker_vel", "attacker_pitch", "attacker_yaw", "attacker_pitch_delta", 
@@ -61,8 +61,8 @@ for file_idx in range(start_file_idx, files_count):
     for p in all_players:
         context_window = pd.DataFrame(columns=context_window_vals)
         attacker = p
-        is_attacker_cheater = attacker in match_events[-2][1]["steamid"].tolist()
-        # is_attacker_cheater = False
+        # is_attacker_cheater = attacker in match_events[-2][1]["steamid"].tolist()
+        is_attacker_cheater = False
         player_deaths = MDP.get_player_kills(attacker, player_death_idx)
         start_ticks, end_ticks = MDP.get_context_window_ticks(ticks_before_kill, ticks_after_kill, attacker, player_death_idx)
 
