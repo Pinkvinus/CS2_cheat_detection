@@ -49,6 +49,8 @@ def train_model(model, project_root):
         epoch_train_loss = 0.0
 
         for inputs, labels in train_loader:
+            inputs = inputs.to(device)
+            labels = labels.to(device)
             optimizer.zero_grad()
             outputs = model(inputs)
             loss = criterion(outputs, labels)
