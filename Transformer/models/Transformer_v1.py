@@ -34,8 +34,7 @@ class Transformer_V1(nn.Module):
         self.fc_out = nn.Sequential(
             nn.Linear(feature_dim, 128),
             nn.ReLU(),
-            nn.Linear(128, 1),
-            nn.Sigmoid()  # probability for binary classification
+            nn.Linear(128, 1)
         )
 
     def forward(self, x):

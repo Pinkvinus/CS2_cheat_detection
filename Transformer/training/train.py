@@ -34,6 +34,9 @@ def train_model(model):
     train_losses = []
     val_losses = []
     val_accs = []
+    recalls = []
+    precisions = []
+    rocs = []
 
     for epoch in range(num_epochs):
         model.train()
@@ -50,14 +53,17 @@ def train_model(model):
         scheduler.step()
 
         avg_train_loss = epoch_train_loss / len(train_loader)
-        val_acc, val_loss = evaluate(model, val_loader, device, criterion)
+        val_acc, val_loss, recall, precs, roc = evaluate(model, val_loader, device, criterion)
         train_losses.append(avg_train_loss)
         val_losses.append(val_loss)
         val_accs.append(val_acc)
+        recalls.append(recall)
+        precisions.append(precs)
+        rocs.append(roc)
         print(f"Epoch {epoch+1} | Train Loss: {avg_train_loss:.4f} | Val Loss: {val_loss:.4f} | Val Acc: {val_acc:.4f}")
 
         if (epoch+1) % checkpoint_freq == 0:
-            save_checkpoint(model, optimizer, epoch, checkpoint_dir, train_losses, val_losses, val_accs)
+            save_checkpoint(model, optimizer, epoch, checkpoint_dir, train_losses, val_losses, val_accs, recalls, precisions, rocs)
 
 # if __name__ == "__main__":
 #     train_model()
