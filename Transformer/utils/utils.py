@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+import os
 
 def save_checkpoint(model, optimizer, epoch, file_path, train_losses, val_losses, val_accs, recalls, precisions, rocs):
     """
@@ -22,5 +23,6 @@ def save_checkpoint(model, optimizer, epoch, file_path, train_losses, val_losses
         'precisions': precisions,
         'rocs': rocs
     }
-    torch.save(checkpoint, file_path)
+    file_path_file = os.path.join(file_path, f"model_1024_epoch_{epoch}")
+    torch.save(checkpoint, file_path_file)
     print(f"Checkpoint saved at {file_path}")

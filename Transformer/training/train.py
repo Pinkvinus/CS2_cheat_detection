@@ -10,11 +10,11 @@ from training.hyperparameters import seq_len, batch_size, num_epochs, learning_r
 import os
 
 
-def train_model(model):
+def train_model(model, project_root):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if device.type != "cuda":
         raise Exception("CUDA Could not be activated!")
-    checkpoint_dir = os.path.join("checkpoint")
+    checkpoint_dir = os.path.join(project_root, "Checkpoints")
 
     dataset = DataImporter()
     train_dataset, val_dataset, test_dataset = random_split(
