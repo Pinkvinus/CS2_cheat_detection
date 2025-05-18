@@ -1,6 +1,6 @@
 import torch
 from torch.utils.data import DataLoader, random_split
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix
 from models.Transformer_v1 import Transformer_V1
 from data.dataset import DataImporter
 from pathlib import Path
@@ -55,6 +55,7 @@ precision = precision_score(y_true, y_pred)
 recall = recall_score(y_true, y_pred)
 f1 = f1_score(y_true, y_pred)
 roc = roc_auc_score(y_true, y_scores)
+tn, fp, fn, tp = confusion_matrix(all_labels, all_preds).ravel()
 
 print(f"Accuracy:  {acc:.4f}")
 print(f"Precision: {precision:.4f}")
@@ -67,7 +68,11 @@ data = {
     'recall': recall,
     'precision': precision,
     'roc': roc,
-    'f1': f1
+    'f1': f1,
+    'tp': int(tp),
+    'fp': int(fp),
+    'tn': int(tn),
+    'fn': int(fn),
 }
 file_path_save = os.path.join(root_folder, "checkpoints", checkpoint_name.replace(".pth", "_testdata.pth"))
 torch.save(data, file_path_save)
