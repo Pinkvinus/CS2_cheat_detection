@@ -73,6 +73,9 @@ data = {
     'fp': int(fp),
     'tn': int(tn),
     'fn': int(fn),
+    'y_true': y_true,
+    'y_pred': y_pred,
+    'y_scores': y_scores
 }
 file_path_save = os.path.join(root_folder, "checkpoints", checkpoint_name.replace(".pth", "_testdata.pth"))
 torch.save(data, file_path_save)
