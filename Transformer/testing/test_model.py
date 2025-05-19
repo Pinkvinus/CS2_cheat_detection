@@ -15,7 +15,7 @@ root_folder = Path(__file__).parent.parent
 checkpoint_name = "model_1024_epoch_99.pth"
 
 model = Transformer_V1(feature_dim, seq_len, number_heads, num_layers, dim_feedforward, dropout)
-checkpoint = torch.load(os.path.join(root_folder, "checkpoints", checkpoint_name), map_location=device)
+checkpoint = torch.load(os.path.join(root_folder, "checkpoints", checkpoint_name), map_location=device, weights_only=False)
 model.load_state_dict(checkpoint["model_state_dict"])
 model.to(device)
 model.eval()
