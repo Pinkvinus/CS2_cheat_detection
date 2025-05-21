@@ -38,7 +38,7 @@ class Transformer_V1(nn.Module):
         )
 
     def forward(self, x):
-        # x shape: (batch_size, seq_len, feature_dim) = (batch_size, 1024, 43)
+        # x shape: (batch_size, seq_len, feature_dim) = (batch_size, 1024, 44)
         B = x.size(0)
 
         # x = self.input_proj(x)  # (batch_size, 1024, d_model) NOT IN USE
