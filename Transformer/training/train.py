@@ -8,27 +8,58 @@ from utils.utils import save_checkpoint
 from torchinfo import summary
 from training.hyperparameters import seq_len, batch_size, num_epochs, learning_rate, train_size, val_size, test_size, feature_dim, checkpoint_freq
 import os
+from collections import Counter
 
 
 def train_model(model, project_root):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if device.type != "cuda":
         raise Exception("CUDA Could not be activated!")
-    checkpoint_dir = os.path.join(project_root, "checkpoints")
+    checkpoint_dir = os.path.join(project_root, "checkpoints_new")
     
     seed = 42
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
 
-    dataset = DataImporter()
-    train_dataset, val_dataset, test_dataset = random_split(
-        dataset, [train_size, val_size, test_size],
-        generator=torch.Generator().manual_seed(42)
-    )
+    train_dataset = DataImporter(split='train', seed=41)
+    val_dataset = DataImporter(split='val', seed=41)
+    test_dataset = DataImporter(split='test', seed=41)
+
+    label_counter = Counter()
+    for _, label in train_dataset:
+        label_counter[int(label.item())] += 1
+    print("Label distribution in train set:")
+    print(f"Label 0: {label_counter[0]}")
+    print(f"Label 1: {label_counter[1]}")
+    train_total = label_counter[0] + label_counter[1]
+
+    label_counter = Counter()
+    for _, label in test_dataset:
+        label_counter[int(label.item())] += 1
+    print("Label distribution in test set:")
+    print(f"Label 0: {label_counter[0]}")
+    print(f"Label 1: {label_counter[1]}")
+    test_total = label_counter[0] * 2 + label_counter[1] * 4
+
+    label_counter = Counter()
+    for _, label in val_dataset:
+        label_counter[int(label.item())] += 1
+    print("Label distribution in val set:")
+    print(f"Label 0: {label_counter[0]}")
+    print(f"Label 1: {label_counter[1]}")
+    val_total = label_counter[0] + label_counter[1]
+
+    train_percent = train_total / (train_total + val_total + test_total) * 100
+    test_percent = test_total / (train_total + val_total + test_total) * 100
+    val_percent = val_total / (train_total + val_total + test_total) * 100
+
+    print(f"Train percent: {train_percent}")
+    print(f"Test percent: {test_percent}")
+    print(f"Val percent: {val_percent}")
 
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size)
-    test_loader = DataLoader(test_dataset, batch_size=batch_size)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
     model = model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
