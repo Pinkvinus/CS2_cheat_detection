@@ -6,7 +6,9 @@
 *.gz
 *.7z
 *.parquet
+*.pth
 *.odt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
