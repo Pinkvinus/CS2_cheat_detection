@@ -26,24 +26,24 @@ def train_model(model, project_root):
     test_dataset = DataImporter(split='test', seed=41)
 
     label_counter = Counter()
-    for _, label in train_dataset:
-        label_counter[int(label.item())] += 1
+    for _, label in train_dataset.samples:
+        label_counter[int(label)] += 1
     print("Label distribution in train set:")
     print(f"Label 0: {label_counter[0]}")
     print(f"Label 1: {label_counter[1]}")
     train_total = label_counter[0] + label_counter[1]
 
     label_counter = Counter()
-    for _, label in test_dataset:
-        label_counter[int(label.item())] += 1
+    for _, label in test_dataset.samples:
+        label_counter[int(label)] += 1
     print("Label distribution in test set:")
     print(f"Label 0: {label_counter[0]}")
     print(f"Label 1: {label_counter[1]}")
     test_total = label_counter[0] * 2 + label_counter[1] * 4
 
     label_counter = Counter()
-    for _, label in val_dataset:
-        label_counter[int(label.item())] += 1
+    for _, label in val_dataset.samples:
+        label_counter[int(label)] += 1
     print("Label distribution in val set:")
     print(f"Label 0: {label_counter[0]}")
     print(f"Label 1: {label_counter[1]}")
