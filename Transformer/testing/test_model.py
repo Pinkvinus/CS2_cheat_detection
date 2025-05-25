@@ -20,11 +20,10 @@ model.load_state_dict(checkpoint["model_state_dict"])
 model.to(device)
 model.eval()
 
-dataset = DataImporter()
-train_dataset, val_dataset, test_dataset = random_split(
-    dataset, [train_size, val_size, test_size],
-    generator=torch.Generator().manual_seed(42)
-)
+train_dataset = DataImporter(split='train', seed=41)
+val_dataset = DataImporter(split='val', seed=41)
+test_dataset = DataImporter(split='test', seed=41)
+
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size)
 test_loader = DataLoader(test_dataset, batch_size=batch_size)
