@@ -51,6 +51,7 @@ def plot_training_metrics(metrics, title=None):
     ax1.plot(epochs, metrics['val_losses'], label='Val Loss')
     ax1.set_title("Loss")
     ax1.set_xlabel("Epoch")
+    ax1.set_ylim(0, 0.5)
     ax1.set_ylabel("Loss")
     ax1.grid(True)
     ax1.legend()
@@ -60,6 +61,7 @@ def plot_training_metrics(metrics, title=None):
     ax2.plot(epochs, metrics['val_accs'], label='Val Accuracy', color='green')
     ax2.set_title("Validation Accuracy")
     ax2.set_xlabel("Epoch")
+    ax2.set_ylim(0.5, 1)
     ax2.set_ylabel("Accuracy")
     ax2.grid(True)
     ax2.legend()
@@ -70,6 +72,7 @@ def plot_training_metrics(metrics, title=None):
     ax3.set_title("Recall")
     ax3.set_xlabel("Epoch")
     ax3.set_ylabel("Recall")
+    ax3.set_ylim(0.5, 1)
     ax3.grid(True)
     ax3.legend()
 
@@ -79,6 +82,7 @@ def plot_training_metrics(metrics, title=None):
     ax4.set_title("Precision")
     ax4.set_xlabel("Epoch")
     ax4.set_ylabel("Precision")
+    ax4.set_ylim(0.5, 1)
     ax4.grid(True)
     ax4.legend()
 
@@ -88,6 +92,7 @@ def plot_training_metrics(metrics, title=None):
     ax5.set_title("ROC AUC")
     ax5.set_xlabel("Epoch")
     ax5.set_ylabel("ROC AUC")
+    ax5.set_ylim(0.5, 1)
     ax5.grid(True)
     ax5.legend()
 
