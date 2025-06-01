@@ -39,7 +39,7 @@ def load_testing_checkpoint(file_path):
 def plot_training_metrics(metrics, title=None):
     epochs = list(range(1, len(metrics['train_losses']) + 1))
 
-    fig = plt.figure(figsize=(10, 12))
+    fig = plt.figure(figsize=(10, 10))
     if title:
         fig.suptitle(title, fontsize=16)
 
@@ -52,15 +52,17 @@ def plot_training_metrics(metrics, title=None):
     ax1.set_title("Loss")
     ax1.set_xlabel("Epoch")
     ax1.set_ylim(0, 0.5)
+    ax1.axvline(x=5, color='red', linestyle=':', linewidth=2)
     ax1.set_ylabel("Loss")
     ax1.grid(True)
     ax1.legend()
 
     # 2. Accuracy
     ax2 = fig.add_subplot(gs[1, 0])
-    ax2.plot(epochs, metrics['val_accs'], label='Val Accuracy', color='green')
-    ax2.set_title("Validation Accuracy")
+    ax2.plot(epochs, metrics['val_accs'], label='Accuracy', color='green')
+    ax2.set_title("Accuracy")
     ax2.set_xlabel("Epoch")
+    ax2.axvline(x=5, color='red', linestyle=':', linewidth=2)
     ax2.set_ylim(0.5, 1)
     ax2.set_ylabel("Accuracy")
     ax2.grid(True)
@@ -71,6 +73,7 @@ def plot_training_metrics(metrics, title=None):
     ax3.plot(epochs, metrics['recalls'], label='Recall', color='orange')
     ax3.set_title("Recall")
     ax3.set_xlabel("Epoch")
+    ax3.axvline(x=5, color='red', linestyle=':', linewidth=2)
     ax3.set_ylabel("Recall")
     ax3.set_ylim(0.5, 1)
     ax3.grid(True)
@@ -81,6 +84,7 @@ def plot_training_metrics(metrics, title=None):
     ax4.plot(epochs, metrics['precisions'], label='Precision', color='purple')
     ax4.set_title("Precision")
     ax4.set_xlabel("Epoch")
+    ax4.axvline(x=5, color='red', linestyle=':', linewidth=2)
     ax4.set_ylabel("Precision")
     ax4.set_ylim(0.5, 1)
     ax4.grid(True)
@@ -91,6 +95,7 @@ def plot_training_metrics(metrics, title=None):
     ax5.plot(epochs, metrics['rocs'], label='ROC AUC', color='red')
     ax5.set_title("ROC AUC")
     ax5.set_xlabel("Epoch")
+    ax5.axvline(x=5, color='red', linestyle=':', linewidth=2)
     ax5.set_ylabel("ROC AUC")
     ax5.set_ylim(0.5, 1)
     ax5.grid(True)
@@ -106,11 +111,21 @@ def plot_confusion_matrix(tp, fp, tn, fn, title="Confusion Matrix", labels=["Not
                    [fn, tp]])
 
     plt.figure(figsize=(6, 5))
-    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=labels, yticklabels=labels)
+    sns.heatmap(
+        cm,
+        annot=True,
+        fmt='d',
+        cmap='Blues',
+        xticklabels=labels,
+        yticklabels=labels,
+        annot_kws={"size": 18}  # 🔍 Increase font size here
+    )
 
-    plt.title(title)
-    plt.xlabel('Predicted Label')
-    plt.ylabel('True Label')
+    plt.title(title, fontsize=16)
+    plt.xlabel('Predicted Label', fontsize=14)
+    plt.ylabel('True Label', fontsize=14)
+    plt.xticks(fontsize=12)
+    plt.yticks(fontsize=12)
     plt.tight_layout()
     plt.show()
 
@@ -134,10 +149,12 @@ def plot_roc_curve(y_true, y_probs, title="ROC Curve"):
 
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.05])
-    plt.xlabel("False Positive Rate")
-    plt.ylabel("True Positive Rate")
-    plt.title(title)
-    plt.legend(loc="lower right")
+    plt.xlabel("False Positive Rate", fontsize=15)
+    plt.ylabel("True Positive Rate", fontsize=15)
+    plt.title(title, fontsize=18)
+    plt.legend(loc="lower right", fontsize=13)
+    plt.tick_params(axis='both', which='major', labelsize=12)
+
     plt.grid(True)
     plt.tight_layout()
     plt.show()
